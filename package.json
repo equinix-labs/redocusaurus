@@ -1,6 +1,6 @@
 {
   "name": "docusaurus-theme-redoc",
-  "version": "2.2.1",
+  "version": "2.2.3",
   "description": "Redoc Component for DocusaurusV2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -38,7 +38,7 @@
     "mobx": "^6.12.4",
     "postcss": "^8.4.45",
     "postcss-prefix-selector": "^1.16.1",
-    "redoc": "2.1.5",
+    "redoc": "2.4.0",
     "styled-components": "^6.1.11"
   },
   "devDependencies": {

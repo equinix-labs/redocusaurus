@@ -8,6 +8,7 @@ const clsx_1 = __importDefault(require("clsx"));
 require("../../global");
 const redoc_1 = require("redoc");
 const useSpec_1 = require("../../utils/useSpec");
+const useBrokenLinks_1 = __importDefault(require("@docusaurus/useBrokenLinks"));
 const Styles_1 = require("./Styles");
 require("./styles.css");
 /*!
@@ -19,6 +20,7 @@ require("./styles.css");
 function ServerRedoc(props) {
     const { className, optionsOverrides, ...specProps } = props;
     const { store, darkThemeOptions, lightThemeOptions, hasLogo } = (0, useSpec_1.useSpec)(specProps, optionsOverrides);
+    collectMenuItemAnchors(store.menu.items);
     return (react_1.default.createElement(react_1.default.Fragment, null,
         react_1.default.createElement(Styles_1.ServerStyles, { specProps: specProps, lightThemeOptions: lightThemeOptions, darkThemeOptions: darkThemeOptions }),
         react_1.default.createElement("div", { className: (0, clsx_1.default)([
@@ -27,6 +29,22 @@ function ServerRedoc(props) {
                 className,
             ]) },
             react_1.default.createElement(redoc_1.Redoc, { store: store }))));
+}
+function collectMenuItemAnchors(menuItems, parentAnchor = "") {
+    menuItems.forEach((menuItem) => {
+        // Register anchor for menu item
+        (0, useBrokenLinks_1.default)().collectAnchor(menuItem.id);
+        // If this is a child menu item, register a shortened anchor as well
+        // This may not be necessary in all cases, but definitely needed for
+        // menuItems of the form `tag/<Tag ID>/operation/<Operation ID>`.
+        if (parentAnchor != "") {
+            const childAnchor = menuItem.id.replace(`${parentAnchor}/`, "");
+            (0, useBrokenLinks_1.default)().collectAnchor(childAnchor);
+        }
+        if (menuItem.items.length > 0) {
+            collectMenuItemAnchors(menuItem.items, menuItem.id);
+        }
+    });
 }
 exports.default = ServerRedoc;
 //# sourceMappingURL=ServerRedoc.js.map

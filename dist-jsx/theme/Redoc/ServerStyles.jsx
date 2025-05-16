@@ -21,7 +21,8 @@ const renderCss = function (store) {
 const LIGHT_MODE_PREFIX = "html:not([data-theme='dark'])";
 const DARK_MODE_PREFIX = "html([data-theme='dark'])";
 export function ServerStyles({ specProps, lightThemeOptions, darkThemeOptions, }) {
-    const fullUrl = specProps.normalizeUrl ? useBaseUrl(specProps.url, { absolute: true }) : specProps.url;
+    const absoluteUrl = useBaseUrl(specProps.url, { absolute: true });
+    const fullUrl = specProps.normalizeUrl ? absoluteUrl : specProps.url;
     const lightCss = prefixCssSelectors(renderCss(new AppStore(specProps.spec, fullUrl, lightThemeOptions)), LIGHT_MODE_PREFIX);
     const darkCss = prefixCssSelectors(renderCss(new AppStore(specProps.spec, fullUrl, darkThemeOptions)), DARK_MODE_PREFIX);
     return (<div className="redocusaurus-styles">

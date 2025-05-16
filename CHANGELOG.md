@@ -1,5 +1,17 @@
 # docusaurus-theme-redoc
 
+## 2.2.3
+
+### Patch Changes
+
+- [#410](https://github.com/rohit-gohri/redocusaurus/pull/410) [`011048f`](https://github.com/rohit-gohri/redocusaurus/commit/011048fd7c54788f3790ac1c3ccb0fbad7bf9f2e) Thanks [@dependabot](https://github.com/apps/dependabot)! - Bump redoc from 2.1.5 to 2.4.0
+
+## 2.2.2
+
+### Patch Changes
+
+- [#402](https://github.com/rohit-gohri/redocusaurus/pull/402) [`ba2bd9c`](https://github.com/rohit-gohri/redocusaurus/commit/ba2bd9c5964df7f88ce1b5e7c08d2fcf5cd889f3) Thanks [@ctreatma](https://github.com/ctreatma)! - Add support for relative spec download URLs
+
 ## 2.2.1
 
 ### Patch Changes

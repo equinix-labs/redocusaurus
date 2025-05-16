@@ -21,7 +21,8 @@ let currentStore = null;
  */
 function useSpec({ spec, url, themeId, normalizeUrl }, optionsOverrides) {
     const specOptions = (0, useSpecOptions_1.useSpecOptions)(themeId, optionsOverrides);
-    const fullUrl = normalizeUrl ? (0, useBaseUrl_1.default)(url, { absolute: true }) : url;
+    const absoluteUrl = (0, useBaseUrl_1.default)(url, { absolute: true });
+    const fullUrl = normalizeUrl ? absoluteUrl : url;
     const isBrowser = (0, useIsBrowser_1.default)();
     const isDarkTheme = (0, theme_common_1.useColorMode)().colorMode === 'dark';
     const result = (0, react_1.useMemo)(() => {

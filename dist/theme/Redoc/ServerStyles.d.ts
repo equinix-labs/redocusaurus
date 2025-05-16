@@ -5,6 +5,5 @@ export declare function ServerStyles({ specProps, lightThemeOptions, darkThemeOp
     specProps: SpecProps;
     lightThemeOptions: RedocRawOptions;
     darkThemeOptions: RedocRawOptions;
-    absolute: boolean;
 }): React.JSX.Element;
 //# sourceMappingURL=ServerStyles.d.ts.map
