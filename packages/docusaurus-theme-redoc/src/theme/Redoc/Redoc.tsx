@@ -42,12 +42,18 @@ function RedocClient({ spec, options, basePath }: RedocClientProps) {
     }
   }, [colorMode]);
 
-  // Redoc -> Docusaurus: Redoc's own toggle changes the class on <html>.
+  // Redoc -> Docusaurus: Redoc's own toggle changes the class on <html>. Also
+  // repairs the class if something else overwrites it.
   useEffect(() => {
     const html = document.documentElement;
     const observer = new MutationObserver(() => {
       const mode = REDOC_MODE_CLASSES.find((c) => html.classList.contains(c));
-      if (mode && mode !== colorMode) {
+      if (!mode) {
+        // Docusaurus re-applies its own <html> class on navigation (back and
+        // forward included), which wipes Redoc's class and leaves its styles
+        // unmatched. Put the current mode back.
+        html.classList.add(colorMode);
+      } else if (mode !== colorMode) {
         setColorMode(mode);
       }
     });
