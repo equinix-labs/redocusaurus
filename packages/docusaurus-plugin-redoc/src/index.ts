@@ -6,8 +6,6 @@ import type {
   OptionValidationContext,
 } from '@docusaurus/types';
 import { normalizeUrl } from '@docusaurus/utils';
-import { loadAndBundleSpec } from 'redoc';
-import type { OpenAPISpec } from 'redoc/typings/types';
 import {
   formatProblems,
   getTotals,
@@ -25,6 +23,9 @@ import {
   DEFAULT_OPTIONS,
 } from './options';
 import type { SpecProps, ApiDocProps } from './types/common';
+
+// Redoc 3 doesn't export its spec types, so use a loose equivalent.
+type OpenAPISpec = Record<string, any>;
 import { loadSpecWithConfig } from './loadSpec';
 import { loadRedoclyConfig } from './loadRedoclyConfig';
 
@@ -69,8 +70,8 @@ export default function redocPlugin(
     name: 'docusaurus-plugin-redoc',
     async loadContent() {
       const redoclyConfig = await loadRedoclyConfig(config);
-      if (redoclyConfig.configFile) {
-        filesToWatch.push(redoclyConfig.configFile);
+      if (redoclyConfig.configPath) {
+        filesToWatch.push(redoclyConfig.configPath);
       }
 
       let bundledSpec: Document, problems: NormalizedProblem[];
@@ -114,15 +115,16 @@ export default function redocPlugin(
       if (debug) {
         console.log('[REDOCUSAURUS_PLUGIN] File Bundled');
       }
-      // Pass again to loader to convert swagger to openapi
-      const converted = await loadAndBundleSpec(bundledSpec.parsed);
+      // Redoc 3 converts Swagger 2.0 to OpenAPI itself at render time, and its
+      // package is a browser-only ES module that can't be loaded here in Node.
+      const converted = bundledSpec.parsed as OpenAPISpec;
 
       // If download url is not provided then use bundled yaml as a static file (see `postBuild`)
       url = url || fileName;
 
       return {
         converted,
-        bundle: bundledSpec.parsed,
+        bundle: bundledSpec.parsed as Record<string, unknown>,
       };
     },
     async contentLoaded({ content, actions }) {

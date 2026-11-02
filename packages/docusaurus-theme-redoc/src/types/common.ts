@@ -1,6 +1,5 @@
 import type { Props as LayoutProps } from '@theme/Layout';
-import type { ObjectDescriptionProps, RedocRawOptions } from 'redoc';
-import type { OpenAPISpec } from 'redoc/typings/types';
+import type { RedocRawOptions, OpenAPISpec } from './redoc-compat';
 
 export type ParsedSpec = OpenAPISpec;
 
@@ -53,33 +52,6 @@ export interface ServerRedocProps extends SpecProps {
 }
 
 export interface RedocProps extends Omit<ServerRedocProps, 'spec'>, MdxProps {}
-
-export type ApiSchemaProps = Omit<
-  ObjectDescriptionProps,
-  'parser' | 'options' | 'schemaRef'
-> &
-  MdxProps & {
-    /**
-     * Show the example or not
-     */
-    example?: boolean;
-    /**
-     * Ref to the schema
-     */
-    pointer: ObjectDescriptionProps['schemaRef'];
-  };
-
-export type ApiOperationProps = MdxProps & {
-  /**
-   * Show the example or not
-   */
-  example?: boolean;
-
-  /**
-   * Ref to the operation
-   */
-  pointer: string;
-};
 
 export type ApiDocProps = {
   specProps: SpecProps;

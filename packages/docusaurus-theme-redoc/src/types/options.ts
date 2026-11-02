@@ -1,4 +1,4 @@
-import type { RedocRawOptions, RedocProps } from 'redoc';
+import type { RedocRawOptions } from './redoc-compat';
 
 export type RecursivePartial<T> = {
   [P in keyof T]?: T[P] extends (infer U)[]
@@ -42,7 +42,7 @@ export interface ThemeOptions {
 }
 
 export type GlobalData = {
-  options: RedocProps['store']['rawOptions'];
+  options: RedocRawOptions;
   darkTheme: Partial<RedocRawOptions['theme']>;
   lightTheme: Partial<RedocRawOptions['theme']>;
 };

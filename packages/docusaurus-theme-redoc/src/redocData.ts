@@ -1,6 +1,6 @@
-import type { RedocRawOptions } from 'redoc';
+import type { RedocRawOptions } from './types/redoc-compat';
 import merge from 'lodash/merge';
-import { Config, loadConfig } from '@redocly/openapi-core';
+import { loadConfig } from '@redocly/openapi-core';
 import type {
   GlobalData,
   RedocThemeOverrides,
@@ -11,7 +11,6 @@ const defaultOptions: Partial<RedocRawOptions> = {
   scrollYOffset: 'nav.navbar',
   expandSingleSchemaField: true,
   menuToggle: true,
-  // @ts-expect-error not available in types
   suppressWarnings: true,
 };
 
@@ -152,7 +151,7 @@ export async function getGlobalData({
   theme: customThemeDeprecated,
   options,
 }: ThemeOptions): Promise<GlobalData> {
-  let redoclyOptions: Config['theme']['openapi'];
+  let redoclyOptions: Record<string, any> | undefined;
 
   if (options) {
     if (typeof options === 'string') {
@@ -160,17 +159,12 @@ export async function getGlobalData({
         await loadConfig({
           configPath: options,
         })
-      ).theme.openapi;
+      ).resolvedConfig.theme?.openapi;
     } else {
-      redoclyOptions = new Config({
-        theme: {
-          openapi: options,
-        },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any).theme.openapi;
+      redoclyOptions = options;
     }
   } else {
-    redoclyOptions = (await loadConfig()).theme.openapi;
+    redoclyOptions = (await loadConfig()).resolvedConfig.theme?.openapi;
   }
   const customTheme = {
     ...redoclyOptions?.theme,
