@@ -13,7 +13,7 @@ export default function redocTheme(
 ): Plugin<null> {
   return {
     name: 'docusaurus-theme-redoc',
-    configureWebpack(_config, isServer,{currentBundler}) {
+    configureWebpack(_config, _isServer, { currentBundler }) {
       const bundler = currentBundler.instance ?? require("webpack")
       return {
         plugins: [
@@ -34,14 +34,6 @@ export default function redocTheme(
             'process.env.DEBUG': JSON.stringify(process.env.DEBUG),
             'process.env': JSON.stringify({}),
           }),
-          ...(isServer
-            ? [
-                new bundler.NormalModuleReplacementPlugin(
-                  /theme\/Redoc\/Styles/,
-                  path.join(__dirname, 'theme', 'Redoc', 'ServerStyles.js'),
-                ),
-              ]
-            : []),
         ],
       };
     },

@@ -1,5 +1,5 @@
 import { Joi } from '@docusaurus/utils-validation';
-import type { RawConfig } from '@redocly/openapi-core';
+import type { RawUniversalConfig } from '@redocly/openapi-core';
 
 type LayoutProps = {
   title?: string;
@@ -26,7 +26,7 @@ export interface PluginDirectUsageOptions {
    * Redocly config to bundle file
    * @see https://redocly.com/docs/cli/configuration/configuration-file/
    */
-  config?: string | RawConfig;
+  config?: string | RawUniversalConfig;
   layout?: LayoutProps;
 }
 
