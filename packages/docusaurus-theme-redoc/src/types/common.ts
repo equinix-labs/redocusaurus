@@ -29,6 +29,10 @@ export interface SpecProps {
    * @deprecated TODO: Do the normalization at build time rather than in components
    */
   normalizeUrl?: boolean;
+  /**
+   * Route the spec page is served at. Redoc 3 routes by path below it.
+   */
+  route?: string;
 }
 
 export interface MdxProps {

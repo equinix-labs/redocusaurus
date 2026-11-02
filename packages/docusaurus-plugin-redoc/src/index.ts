@@ -138,6 +138,7 @@ export default function redocPlugin(
         themeId,
         isSpecFile,
         normalizeUrl: normalizeDownloadUrl,
+        route: options.route,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         spec: content.converted as any,
       };
@@ -165,7 +166,9 @@ export default function redocPlugin(
         const routeOptions = {
           modules,
           component: '@theme/ApiDoc',
-          exact: true,
+          // Redoc 3 routes by path below this route (e.g. `<route>/<tag>/<operation>`),
+          // so the page has to render for those sub-paths as well.
+          exact: false,
           path: normalizeUrl([baseUrl, routePath]),
         };
 
