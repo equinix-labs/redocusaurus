@@ -38,6 +38,11 @@ interface RedocProps extends SpecProps {
    * Props to forward to the Redoc component
    */
   optionsOverrides?: import('./redoc-compat').RedocRawOptions;
+  /**
+   * HTML rendered at build time by docusaurus-plugin-redoc (`ssr` option).
+   * Shown by the server render and the first client render, until Redoc mounts.
+   */
+  ssr?: { html: string; cssHref?: string };
 }
 
 interface MdxProps {
@@ -69,6 +74,11 @@ declare module '@theme/ApiDoc' {
      * Title/Description for layout is by default loaded from the API spec
      */
     layoutProps?: Omit<LayoutProps, 'children'>;
+    /**
+     * Rendered HTML of this page, passed by docusaurus-plugin-redoc when it
+     * server renders (`ssr` option)
+     */
+    ssrProps?: { html: string; cssHref?: string };
   }
 
   const ApiDoc: (props: ApiDocProps) => JSX.Element;

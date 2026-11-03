@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from '@docusaurus/router';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import BrowserOnly from '@docusaurus/BrowserOnly';
+import Head from '@docusaurus/Head';
 import { useColorMode } from '@docusaurus/theme-common';
 import useSpecData from '@theme/useSpecData';
 import clsx from 'clsx';
@@ -108,11 +109,28 @@ function Redoc(initProps: RedocProps): JSX.Element {
     (finalProps.route ? routeBaseUrl : pathname).replace(/\/+$/, '') || '/',
   ).current;
 
-  // Redoc 3 renders from a spec object or URL on the client only; the
-  // Redoc 2 server-rendering path (AppStore + styled-components SSR) is gone.
+  // Redoc 3 mounts on the client only. When the plugin rendered this page at
+  // build time, that HTML is the fallback: it is what the static HTML and the
+  // first client render show, so there is nothing to mismatch on hydration,
+  // and Redoc replaces it once it mounts.
+  const { ssr } = finalProps;
+  const fallback = ssr ? (
+    <div
+      className="redocusaurus-ssr"
+      // Rendered by Redoc itself at build time, not user input
+      // eslint-disable-next-line react/no-danger
+      dangerouslySetInnerHTML={{ __html: ssr.html }}
+    />
+  ) : undefined;
+
   return (
     <div className={clsx(['redocusaurus', className])}>
-      <BrowserOnly>
+      {ssr?.cssHref && (
+        <Head>
+          <link rel="stylesheet" href={ssr.cssHref} />
+        </Head>
+      )}
+      <BrowserOnly fallback={fallback}>
         {() => (
           <RedocClient spec={spec} options={options} basePath={basePath} />
         )}
