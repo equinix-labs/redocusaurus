@@ -22,11 +22,11 @@ const sections = [
     ),
   },
   {
-    title: <>📑 Schema Definitions</>,
+    title: <>📚 Multiple APIs</>,
     description: (
       <>
-        Use individual schema definitions{' '}
-        <a href="/docs/guides/schema-imports">directly in your MDX docs</a>
+        Show several APIs on one site and{' '}
+        <a href="/docs/guides/multiple-apis">link them from your sidebar</a>
       </>
     ),
   },

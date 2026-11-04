@@ -30,10 +30,32 @@ type RouteItem = {
 // The plugin is compiled to CommonJS, where tsc turns a literal `import()` into
 // `require()`. Redoc 3 is an ES module and cannot be required, so hide the
 // `import()` from the compiler.
+/** The part of Redoc 3's API that is used to render on the server. */
+interface RedocServerApi {
+  prepareApiDocs(args: {
+    spec: Record<string, unknown>;
+    options: Record<string, unknown>;
+    basePath: string;
+    convertedDownload: boolean;
+  }): Promise<{
+    items: RouteItem[];
+    store: unknown;
+    options: unknown;
+    document?: unknown;
+    timings?: unknown;
+  }>;
+  RedoclyApiDocsStandalone: unknown;
+  ServerStyleSheet: new () => {
+    collectStyles(tree: unknown): unknown;
+    getStyleTags(): string;
+    seal(): void;
+  };
+}
+
 // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
 const importEsm = new Function('specifier', 'return import(specifier)') as (
   specifier: string,
-) => Promise<any>;
+) => Promise<Partial<RedocServerApi>>;
 
 /**
  * Merge the styled-components `<style>` tags of many pages into one stylesheet.
@@ -47,14 +69,16 @@ const importEsm = new Function('specifier', 'return import(specifier)') as (
 export function mergeStyles(styleTags: string[]): string {
   const rules = new Set<string>();
   styleTags.forEach((tags) => {
-    [...tags.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].forEach(([, css]) => {
-      css.split('/*!sc*/').forEach((rule) => {
-        const trimmed = rule.trim();
-        if (trimmed) {
-          rules.add(trimmed);
-        }
-      });
-    });
+    [...tags.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].forEach(
+      ([, css]) => {
+        css.split('/*!sc*/').forEach((rule) => {
+          const trimmed = rule.trim();
+          if (trimmed) {
+            rules.add(trimmed);
+          }
+        });
+      },
+    );
   });
   return `${[...rules].join('\n')}\n`;
 }
@@ -105,13 +129,14 @@ export async function renderSpecRoutes({
   const React = redocRequire('react');
   const { renderToString } = redocRequire('react-dom/server');
   const { MemoryRouter } = redocRequire('react-router');
-  const redoc = await importEsm(pathToFileURL(redocEntry).href);
+  const { prepareApiDocs, RedoclyApiDocsStandalone, ServerStyleSheet } =
+    await importEsm(pathToFileURL(redocEntry).href);
 
   // RedoclyApiDocsStandalone is a memo() component, which is an object, not a function
   if (
-    typeof redoc.prepareApiDocs !== 'function' ||
-    !redoc.RedoclyApiDocsStandalone ||
-    typeof redoc.ServerStyleSheet !== 'function'
+    typeof prepareApiDocs !== 'function' ||
+    !RedoclyApiDocsStandalone ||
+    typeof ServerStyleSheet !== 'function'
   ) {
     throw new Error(
       'redoc does not export prepareApiDocs, RedoclyApiDocsStandalone and ServerStyleSheet',
@@ -119,7 +144,7 @@ export async function renderSpecRoutes({
   }
 
   const started = Date.now();
-  const prepared = await redoc.prepareApiDocs({
+  const prepared = await prepareApiDocs({
     spec,
     options: {},
     basePath,
@@ -138,14 +163,14 @@ export async function renderSpecRoutes({
 
   const rendered: PrerenderedRoute[] = [];
   routes.forEach((route) => {
-    const sheet = new redoc.ServerStyleSheet();
+    const sheet = new ServerStyleSheet();
     try {
       const html: string = renderToString(
         sheet.collectStyles(
           React.createElement(
             MemoryRouter,
             { initialEntries: [route] },
-            React.createElement(redoc.RedoclyApiDocsStandalone, {
+            React.createElement(RedoclyApiDocsStandalone, {
               items: prepared.items,
               store: prepared.store,
               options: prepared.options,

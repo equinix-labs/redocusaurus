@@ -49,7 +49,7 @@
     "@docusaurus/utils": "^3.6.0"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=22"
   },
   "devDependencies": {
     "@docusaurus/theme-common": "^3.6.0",

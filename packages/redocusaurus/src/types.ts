@@ -45,7 +45,7 @@ export type PresetOptions = {
    * See the `ssr` option of docusaurus-plugin-redoc.
    * @default true
    */
-  ssr?: boolean | 'required';
+  ssr?: PluginOptions['ssr'];
   specs?: SpecOptions[];
   openapi?: FolderOptions;
   theme?: Omit<ThemeOptions, 'id'>;

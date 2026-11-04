@@ -1,6 +1,6 @@
-import type { RedocRawOptions } from './types/redoc-compat';
 import merge from 'lodash/merge';
 import { loadConfig } from '@redocly/openapi-core';
+import type { RedocRawOptions } from './types/redoc-compat';
 import type {
   GlobalData,
   RedocThemeOverrides,
@@ -29,7 +29,7 @@ const getDefaultTheme = (
         prism: {
           additionalLanguages: ['scala'],
         },
-      }
+      },
     },
     customTheme,
   );
@@ -144,6 +144,11 @@ export function getRedocThemes(
   };
 }
 
+/** Redoc options as set in the theme options or in `redocly.yaml`. */
+type RedoclyOptions = Record<string, unknown> & {
+  theme?: RedocThemeOverrides;
+};
+
 export async function getGlobalData({
   primaryColor,
   primaryColorDark = primaryColor,
@@ -151,7 +156,7 @@ export async function getGlobalData({
   theme: customThemeDeprecated,
   options,
 }: ThemeOptions): Promise<GlobalData> {
-  let redoclyOptions: Record<string, any> | undefined;
+  let redoclyOptions: RedoclyOptions | undefined;
 
   if (options) {
     if (typeof options === 'string') {
@@ -161,7 +166,7 @@ export async function getGlobalData({
         })
       ).resolvedConfig.theme?.openapi;
     } else {
-      redoclyOptions = options;
+      redoclyOptions = options as RedoclyOptions;
     }
   } else {
     redoclyOptions = (await loadConfig()).resolvedConfig.theme?.openapi;

@@ -100,13 +100,21 @@ function Redoc(initProps: RedocProps): JSX.Element {
   const { options } = useSpecOptions(themeId, optionsOverrides);
 
   // Redoc 3 routes by path (it mounts its own BrowserRouter), so it has to be
-  // told where it lives. Prefer the route the plugin registered; the current
-  // location only works for pages that embed Redoc without one, and is captured
-  // on first render because Redoc moves the URL itself afterwards.
+  // told where it lives. On the spec's own page that is the route the plugin
+  // registered. When Redoc is embedded in another page (`ApiDocMdx` in an MDX
+  // page, `@theme/Redoc` in a custom page) the spec's data still carries its own
+  // route, but Redoc lives at the page it is on. The base is captured on first
+  // render because Redoc moves the URL itself afterwards.
   const { pathname } = useLocation();
-  const routeBaseUrl = useBaseUrl(finalProps.route);
+  // `useBaseUrl` returns undefined when there is no route to resolve
+  const routeBaseUrl = (useBaseUrl(finalProps.route) ?? '').replace(/\/+$/, '');
+  const currentPath = pathname.replace(/\/+$/, '');
+  const isSpecPage =
+    Boolean(finalProps.route) &&
+    (currentPath === routeBaseUrl ||
+      currentPath.startsWith(`${routeBaseUrl}/`));
   const basePath = useRef(
-    (finalProps.route ? routeBaseUrl : pathname).replace(/\/+$/, '') || '/',
+    (isSpecPage ? routeBaseUrl : currentPath) || '/',
   ).current;
 
   // Redoc 3 mounts on the client only. When the plugin rendered this page at
