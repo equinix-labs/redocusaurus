@@ -28,11 +28,10 @@ or anchors in a production build):
 ## Items
 
 ### A. Coordination
-- [ ] **1. Write a description on #473.** The issue only says "we want Redoc 3 support".
-      Add: what Redoc 3 changes (path routing, no `AppStore`, new peer dependencies, Node
-      22+), what the branch does, what breaks, and the proposed split (see below). Ask
-      whether the maintainer wants a pre-release (`next`) or a major version.
-- [ ] **2. Agree the PR split** with the maintainer (see "Proposed split").
+- [ ] **2. Agree the PR split** with the maintainer (see "Proposed split"), and ask whether
+      they want a pre-release (`next`) or a major version. Number 1 was dropped on purpose:
+      the context for #473 is in the staging PR description and this file, so the issue is
+      left alone for now.
 
 ### B. Required for any PR
 - [x] **3. Lint, type check and build are green.** `yarn build` (packages and website),
@@ -46,12 +45,19 @@ or anchors in a production build):
       pages render. Left: update the remaining docs text and README that describe Redoc 2,
       and review the pages the visual e2e checks (`website/snapshots.js`). The snapshot
       baselines will all change and need the maintainer's approval.
-- [ ] **5. A changeset** (CONTRIBUTING requires one per PR; this is a major bump).
-- [ ] **6. Migration guide and a list of breaking changes**: `ApiOperation` and
-      `ApiSchema` are removed, new peer dependencies (react-router 7 or 8, React 18.3+/19,
-      Node 22+), URLs change from `#tag/...` hashes to paths, and the legacy mapper does
-      not handle `#operation/<id>`, `#section/...` or `#schema/...`. The Redoc 2 `theme` object is ignored (use `primaryColor` and
-      `cssVariables`), telemetry is off by default, and Node 22 or newer is required.
+- [x] **5. A changeset.** `.changeset/bright-routes-render.md`: a major bump for the three
+      linked packages (`docusaurus-plugin-redoc`, `docusaurus-theme-redoc`, `redocusaurus`),
+      listing the breaking changes and what is new, and linking the migration guide. Check
+      it with `yarn changeset status --since=origin/main` once committed. Before submitting:
+      re-check every claim in it against the final code, since it becomes the changelog.
+- [x] **6. Migration guide and a list of breaking changes.**
+      `website/docs/guides/migrating-to-v3.md`: requirements (Node 22+), links changing from
+      hashes to paths (and what the browser redirect does not cover), build-time rendering
+      and the `ssr` option, theming (`primaryColor`, `cssVariables`, the ignored `theme`
+      object), telemetry off by default, the removed `ApiOperation`, `ApiSchema`,
+      `ServerRedoc` and `ServerStyles`, options, and Swagger 2.0. Left to confirm before
+      submitting: the line about `options` is generic (Redoc 3's own configuration
+      reference); list the specific Redoc 2 options that changed once we know them.
 
 ### C. Functional gaps
 - [x] **7. Theme options.** Redoc 3 has no `theme` option and is themed with CSS variables
@@ -114,12 +120,27 @@ or anchors in a production build):
       Security Policy. Document it either way.
 
 ### D. Tests and decisions
-- [ ] **11. Unit tests** for `collectRoutes`, `mergeStyles`, the `operationId` trim,
-      the `ssr` option validation and `legacyHashToPath`. The repo has no unit test setup
-      yet (`yarn test` is the visual e2e).
+- [x] **11. Unit tests.** 67 tests in `packages/*/test`, using Node's built-in test runner
+      against the built `dist` (no new dependency): `yarn build:packages && yarn test:unit`,
+      and a "Unit Tests" step in the build workflow, after the packages are built.
+      Covered: the theme stylesheet builder (defaults follow Infima, `primaryColor`,
+      `primaryColorDark`, `cssVariables`, precedence, unsafe values), `getGlobalData`
+      (telemetry off by default and overridable, the ignored Redoc 2 `theme` warning once),
+      the legacy hash mapper and redirect, `trimOperationIds`, route collection and style
+      merging, `ssr` option validation, and `addSpecRoutes` with the real Redoc 3 rendering a
+      small spec in the worker (one exact route per page, the shared stylesheet and its link
+      under a sub-path `baseUrl`, `ssr: false`, dev builds, other locales, a failed render
+      with `true` and `'required'`, and the whitespace page). Each group was checked by
+      breaking the compiled code on purpose, and the tests failed as they should. The
+      package tsconfigs now exclude `test` from the build, and `.eslintrc` has an override
+      for the tests.
+      Not covered: the React components and hooks (`Redoc`, `useSpecOptions`), the theme
+      plugin's webpack rule and the `postBuild` file writing; those are exercised by the
+      website build and the browser checks only.
 - [ ] **12. Contested defaults**, decide and document:
       - `ssr` on by default (`true`), and whether a failed render should fall back or fail.
-      - Trimming `operationId`s (warn only, or opt-in?).
+      - Trimming `operationId`s (warn only, or opt-in?). Note: the trim used to change the
+        downloadable spec too; fixed, it now only affects the rendered pages.
       - Server rendering for the default locale only (should be an option).
       - Swap (Redoc replaces the server HTML on mount) or true hydration.
 - [x] **13. Clean up the preset's types.** The preset imports `PluginOptions['ssr']` from
@@ -132,6 +153,13 @@ or anchors in a production build):
       commits (`2.6.0-redoc3.N`).
 - [ ] **15. Lockfile.** Regenerate `yarn.lock` from upstream's and only keep the changes
       the port needs.
+- [ ] **19. Verify nothing sensitive is leaked, including hints.** Before submitting, scan
+      the final diff, every commit message and author, the changeset, docs, examples, test
+      fixtures, `yarn.lock` (registry URLs), config files and the PR description for
+      corporate data, internal names, hostnames, registries, tooling or infrastructure
+      details (names of internal sites, repos, tickets, CI and policies, and numbers that
+      identify a specific site). Check history as well as the tip, since the history is
+      rebuilt in item 14. Keep wording generic ("a large docs site").
 - [ ] **16. PR description** with before and after screenshots, the numbers (pages,
       build time, size), the breaking changes and the migration guide.
 

@@ -16,6 +16,7 @@
     "serve": "yarn workspace redocusaurus-website run serve",
     "start": "yarn build:packages && yarn workspace redocusaurus-website run start",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "test:unit": "node --test \"packages/*/test/**/*.test.js\"",
     "version": "changeset version && yarn install --no-immutable && sh scripts/combine-changelog.sh",
     "prepare": "husky install"
   },

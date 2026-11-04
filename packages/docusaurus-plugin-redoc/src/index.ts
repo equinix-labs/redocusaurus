@@ -119,8 +119,12 @@ export default function redocPlugin(
       }
       // Redoc 3 converts Swagger 2.0 to OpenAPI itself at render time, and its
       // package is a browser-only ES module that can't be loaded here in Node.
-      const converted = bundledSpec.parsed as OpenAPISpec;
-      trimOperationIds(converted, spec);
+      // The pages are rendered from a copy with trimmed operationIds, and the
+      // downloadable spec (`bundle`) stays as the author wrote it.
+      const converted = trimOperationIds(
+        bundledSpec.parsed as OpenAPISpec,
+        spec,
+      );
 
       // If download url is not provided then use bundled yaml as a static file (see `postBuild`)
       url = url || fileName;

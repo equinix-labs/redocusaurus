@@ -11,4 +11,5 @@
     "rootDir": "./src",
     "tsBuildInfoFile": "./.tsbuild.jsx.info"
   },
+  "exclude": ["node_modules", "dist", "dist-jsx", "test"]
 }

@@ -4,5 +4,6 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "tsBuildInfoFile": "./.tsbuild.info"
-  }
+  },
+  "exclude": ["node_modules", "dist", "dist-jsx", "test"]
 }
