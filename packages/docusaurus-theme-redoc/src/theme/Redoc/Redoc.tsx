@@ -97,7 +97,7 @@ function Redoc(initProps: RedocProps): JSX.Element {
   };
 
   const { spec, className, themeId, optionsOverrides } = finalProps;
-  const { options } = useSpecOptions(themeId, optionsOverrides);
+  const { options, css, cssHref } = useSpecOptions(themeId, optionsOverrides);
 
   // Redoc 3 routes by path (it mounts its own BrowserRouter), so it has to be
   // told where it lives. On the spec's own page that is the route the plugin
@@ -133,11 +133,17 @@ function Redoc(initProps: RedocProps): JSX.Element {
 
   return (
     <div className={clsx(['redocusaurus', className])}>
-      {ssr?.cssHref && (
-        <Head>
-          <link rel="stylesheet" href={ssr.cssHref} />
-        </Head>
-      )}
+      <Head>
+        {/* Redoc is themed with CSS variables that follow the Docusaurus theme.
+            A `<style>` is not rendered into the static HTML, so use a file when
+            there is one (production builds). */}
+        {cssHref ? (
+          <link rel="stylesheet" href={cssHref} />
+        ) : (
+          <style>{css}</style>
+        )}
+        {ssr?.cssHref && <link rel="stylesheet" href={ssr.cssHref} />}
+      </Head>
       <BrowserOnly fallback={fallback}>
         {() => (
           <RedocClient spec={spec} options={options} basePath={basePath} />

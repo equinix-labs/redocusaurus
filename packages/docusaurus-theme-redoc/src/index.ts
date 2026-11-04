@@ -1,4 +1,6 @@
+import fs from 'fs';
 import path from 'path';
+import { createHash } from 'crypto';
 import { createRequire } from 'module';
 import type { LoadContext, Plugin } from '@docusaurus/types';
 import type { ThemeOptions, GlobalData } from './types/options';
@@ -39,6 +41,9 @@ export default function redocTheme(
   context: LoadContext,
   options: ThemeOptions,
 ): Plugin<null> {
+  // The theme stylesheet to write in `postBuild` (production builds only)
+  let themeCssAsset: { name: string; css: string } | undefined;
+
   return {
     name: 'docusaurus-theme-redoc',
     configureWebpack(_config, _isServer, { currentBundler }) {
@@ -83,7 +88,35 @@ export default function redocTheme(
       const { setGlobalData } = actions;
       const globalData = await getGlobalData(options);
 
+      // Docusaurus renders `<Head>` tags into the static HTML, except `<style>`,
+      // which would only appear once JavaScript runs (a flash of unthemed
+      // content). So in a production build the theme stylesheet is a small file,
+      // linked from the head of the API pages. The dev server has no static HTML,
+      // and the pages fall back to a `<style>` tag.
+      themeCssAsset = undefined;
+      if (process.env.NODE_ENV === 'production') {
+        const name = `redoc-theme-${createHash('sha1')
+          .update(globalData.css)
+          .digest('hex')
+          .slice(0, 12)}.css`;
+        themeCssAsset = { name, css: globalData.css };
+        globalData.cssHref = path.posix.join(
+          context.siteConfig.baseUrl,
+          'assets',
+          'redoc-theme',
+          name,
+        );
+      }
+
       setGlobalData(globalData);
+    },
+    async postBuild({ outDir }) {
+      if (!themeCssAsset) {
+        return;
+      }
+      const dir = path.join(outDir, 'assets', 'redoc-theme');
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(path.join(dir, themeCssAsset.name), themeCssAsset.css);
     },
     getThemePath() {
       return path.join(__dirname, '..', 'dist-jsx', 'theme');

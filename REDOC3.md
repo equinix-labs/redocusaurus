@@ -50,23 +50,51 @@ or anchors in a production build):
 - [ ] **6. Migration guide and a list of breaking changes**: `ApiOperation` and
       `ApiSchema` are removed, new peer dependencies (react-router 7 or 8, React 18.3+/19,
       Node 22+), URLs change from `#tag/...` hashes to paths, and the legacy mapper does
-      not handle `#operation/<id>`, `#section/...` or `#schema/...`.
+      not handle `#operation/<id>`, `#section/...` or `#schema/...`. The Redoc 2 `theme` object is ignored (use `primaryColor` and
+      `cssVariables`), telemetry is off by default, and Node 22 or newer is required.
 
 ### C. Functional gaps
-- [ ] **7. Theme options.** The Redoc 2 `theme` object, `lightTheme` / `darkTheme` and
-      `scrollYOffset` handling are not mapped to Redoc 3's theming. Map the common ones
-      (primary color, fonts, dark and light) and warn about options that are ignored.
-- [ ] **8. Telemetry. Found: it is on by default.** Redoc 3 sends usage events (page
-      viewed, page time, performance metrics, initialized, errors, definition load
-      failures, and UI interactions such as switching servers or expanding all) over
-      OpenTelemetry to `https://otel.cloud.redocly.com/v1/traces`. The sender is created with
-      `disabled: e.disabled ?? false`, and `options.disableTelemetry: true` turns it off.
-      Confirmed in a browser: loading one Redoc page made 15 requests to that host. Every
-      site using this library would send its visitors' page views to a third party.
-      To decide: the default for this library (I suggest `disableTelemetry: true` in the
-      theme's default options, documented, and easy to turn on), and the build-time render
-      (`prepareApiDocs` in `ssr.ts` should pass `disableTelemetry: true` so a build never
-      reports anything).
+- [x] **7. Theme options.** Redoc 3 has no `theme` option and is themed with CSS variables
+      (about 2,900 design tokens, light on `:root`, dark on `:root.dark`), so none of the
+      Redoc 2 theme settings reached it. Decisions: the API pages follow the Docusaurus
+      theme by default, a new option for everything else, and a warning for the old objects.
+      Done:
+      - `redocData.ts` sets Redoc's tokens from Docusaurus's (Infima) variables (fonts,
+        weights, headings, background, text and link colors, primary color and its shades,
+        sidebar), so the pages follow the site in light and dark mode with no extra
+        configuration. The tokens change with `data-theme`, so one rule serves both modes.
+      - `primaryColor` and `primaryColorDark` set the primary tokens (any CSS color; hover,
+        active and tinted shades are derived with `color-mix`). `primaryColorDark` falls
+        back to `primaryColor`.
+      - New option `cssVariables: { light, dark }` for any other token (names with or
+        without `--`; `light` applies in both modes and `dark` overrides it; a value with
+        `;`, `{` or `}` is skipped with a warning).
+      - The Redoc 2 `theme` object (the theme option, and `theme.openapi.theme` in
+        `redocly.yaml`) is ignored, with one warning per build. `theme.openapi.theme` was
+        removed from the website's `redocly.yaml`.
+      - Delivery: Docusaurus does not render a `<style>` from `<Head>` into the static HTML
+        (it would flash unthemed until JavaScript runs), so in a production build the
+        stylesheet is a small file (`assets/redoc-theme/redoc-theme-<hash>.css`, written in
+        `postBuild`) linked from the head of the API pages only. The dev server uses a
+        `<style>` tag.
+      - Checked in the website: light and dark mode, the configured `#1890ff` shows in links
+        and the active item, the sidebar is 300px, embedded pages link the file, other pages
+        do not, and the dev server themes the same. The option builder is tested for
+        defaults, `primaryColorDark`, `cssVariables` and unsafe values.
+      - Docs: Theme Options page and the theme package's README rewritten.
+      - Not done: the Redoc tokens that are not mapped (about 2,900 exist; we map the ones
+        that carry fonts, colors and layout). Review a few more pages (schemas, code samples)
+        for places where Redoc's own colors clash with the site.
+- [x] **8. Telemetry.** Redoc 3 sends usage events (page viewed, page time, performance
+      metrics, initialized, errors, definition load failures, and UI interactions) over
+      OpenTelemetry to `https://otel.cloud.redocly.com/v1/traces`, and it is on unless
+      `options.disableTelemetry` is `true`. Loading one Redoc page made 15 requests to that
+      host. Decision: **off by default**. The theme's default options set
+      `disableTelemetry: true` (a site turns it on with `disableTelemetry: false` in
+      `redocly.yaml` or the `options` theme option, documented in the Theme Options page)
+      and the build-time render passes it too. After the change the same page load makes 0
+      requests to that host. To confirm with the maintainer when we open the PR, since it
+      is a default that differs from Redoc's own.
 - [ ] **9. Reliance on Redoc internals.** The color mode sync uses
       `localStorage['redoc.colorMode']` and the class on `<html>`, watched with a
       `MutationObserver`. Look for a supported option, or isolate it, document it as

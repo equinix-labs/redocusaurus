@@ -146,7 +146,8 @@ export async function renderSpecRoutes({
   const started = Date.now();
   const prepared = await prepareApiDocs({
     spec,
-    options: {},
+    // A build never reports usage events
+    options: { disableTelemetry: true },
     basePath,
     // A server pass can't create the `blob:` download URL for a converted spec
     convertedDownload: false,
