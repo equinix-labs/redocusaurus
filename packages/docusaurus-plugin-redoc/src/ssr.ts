@@ -16,9 +16,9 @@ import { Worker } from 'worker_threads';
 export interface PrerenderedRoute {
   /** Full route path, including the site's baseUrl (e.g. `/api-catalog/x/ports/getports`). */
   path: string;
-  /** Rendered HTML of the Redoc page for this route. */
+  /** Rendered HTML of the Redoc page for this route (empty when only listing routes). */
   html: string;
-  /** styled-components `<style>` tags collected while rendering. */
+  /** styled-components `<style>` tags collected while rendering (empty when only listing routes). */
   styles: string;
 }
 
@@ -114,10 +114,19 @@ export function collectRoutes(items: RouteItem[] | undefined): string[] {
 export async function renderSpecRoutes({
   spec,
   basePath,
+  downloadUrl,
+  render = true,
   debug,
 }: {
   spec: Record<string, unknown>;
   basePath: string;
+  /** Address of the downloadable spec, offered on every page */
+  downloadUrl?: string;
+  /**
+   * `false` only lists the routes (empty `html` and `styles`), which is much
+   * cheaper than rendering every page.
+   */
+  render?: boolean;
   debug?: boolean;
 }): Promise<PrerenderedRoute[]> {
   const themeRequire = createRequire(
@@ -147,7 +156,10 @@ export async function renderSpecRoutes({
   const prepared = await prepareApiDocs({
     spec,
     // A build never reports usage events
-    options: { disableTelemetry: true },
+    options: {
+      disableTelemetry: true,
+      ...(downloadUrl ? { downloadUrls: [{ url: downloadUrl }] } : {}),
+    },
     basePath,
     // A server pass can't create the `blob:` download URL for a converted spec
     convertedDownload: false,
@@ -160,6 +172,10 @@ export async function renderSpecRoutes({
         Date.now() - started
       } ms`,
     );
+  }
+
+  if (!render) {
+    return routes.map((route) => ({ path: route, html: '', styles: '' }));
   }
 
   const rendered: PrerenderedRoute[] = [];
@@ -214,6 +230,8 @@ export async function renderSpecRoutes({
 export function prerenderSpec(options: {
   spec: Record<string, unknown>;
   basePath: string;
+  downloadUrl?: string;
+  render?: boolean;
   debug?: boolean;
 }): Promise<PrerenderedRoute[]> {
   return new Promise((resolve, reject) => {

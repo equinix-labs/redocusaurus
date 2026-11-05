@@ -1,4 +1,5 @@
 import { createHash } from 'crypto';
+import { normalizeUrl } from '@docusaurus/utils';
 import type { OpenAPISpec } from './types/redoc-compat';
 
 const HTTP_METHODS = [
@@ -11,6 +12,25 @@ const HTTP_METHODS = [
   'patch',
   'trace',
 ];
+
+/**
+ * The address of the downloadable copy of a spec. A relative `url` (the bundled
+ * copy the plugin writes to the build) is relative to the site's `baseUrl`, so
+ * prefix it, unless `normalize` is turned off. An absolute `url` is used as is.
+ */
+export function resolveDownloadUrl(
+  url: string | undefined,
+  baseUrl: string,
+  normalize = true,
+): string | undefined {
+  if (!url) {
+    return undefined;
+  }
+  if (!normalize || /^([a-z][a-z\d+.-]*:|\/\/)/i.test(url)) {
+    return url;
+  }
+  return normalizeUrl([baseUrl, url]);
+}
 
 /** Short stable hash, for data file names. */
 export function shortHash(value: string): string {

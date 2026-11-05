@@ -48,6 +48,7 @@ async function register({
   baseUrl = '/',
   locale = 'en',
   defaultLocale = 'en',
+  downloadUrl,
 } = {}) {
   const routes = [];
   const data = {};
@@ -74,6 +75,7 @@ async function register({
     specPath: SPEC_PATH,
     modules: { specProps: '/generated/specProps.json' },
     cssAssets,
+    downloadUrl,
   });
   return { routes, data, cssAssets };
 }
@@ -157,6 +159,30 @@ describe('addSpecRoutes', () => {
       assert.deepEqual([...hrefs], [`/assets/redoc-ssr/${cssAssets[0].name}`]);
     });
 
+    test('offers the download of the spec in the overview', async () => {
+      const { data, routes } = await register({
+        downloadUrl: '/redocusaurus/pets.yaml',
+      });
+      const htmlOf = (path) => {
+        const route = routes.find((r) => r.path === path);
+        return JSON.parse(
+          data[route.modules.ssrProps.replace('/generated/', '')],
+        ).html;
+      };
+      // like in Redoc 2, the download is part of the API's overview page
+      assert.match(htmlOf('/api/pets'), /href="?\/redocusaurus\/pets\.yaml"?/);
+    });
+
+    test('has no download link without a download url', async () => {
+      const { data, routes } = await register();
+      routes.forEach((route) => {
+        const { html } = JSON.parse(
+          data[route.modules.ssrProps.replace('/generated/', '')],
+        );
+        assert.doesNotMatch(html, /pets\.yaml/);
+      });
+    });
+
     test('puts the stylesheet below the base URL of the site', async () => {
       const { data, routes } = await register({ baseUrl: '/docs/' });
       const { cssHref } = JSON.parse(
@@ -207,30 +233,58 @@ describe('addSpecRoutes', () => {
       assertPrefixRoute(routes);
       assert.deepEqual(cssAssets, []);
     });
+  });
 
-    test('so does a build that is not a production build', async () => {
-      process.env.NODE_ENV = 'development';
-      const { routes } = await register();
-      assertPrefixRoute(routes);
-    });
-
-    test('so does a locale that is not the default one', async () => {
-      const { routes } = await register({ locale: 'fr' });
-      assertPrefixRoute(routes);
-    });
-
-    test('and ssr: "required" does not apply there either', async () => {
-      process.env.NODE_ENV = 'development';
-      const { routes } = await register({
-        spec: BROKEN_SPEC,
-        options: { ssr: 'required' },
+  describe('where the pages are not rendered to HTML', () => {
+    /** Exact routes for every page, none with HTML, and no stylesheet. */
+    function assertExactRoutesWithoutHtml({ routes, cssAssets }) {
+      assert.deepEqual(
+        routes.map((route) => route.path).sort(),
+        [...PAGES].sort(),
+      );
+      routes.forEach((route) => {
+        assert.equal(route.exact, true);
+        assert.equal(route.component, '@theme/ApiDoc');
+        assert.equal(route.modules.specProps, '/generated/specProps.json');
+        assert.equal(route.modules.ssrProps, undefined);
       });
+      assert.deepEqual(cssAssets, []);
+    }
+
+    test('a build that is not a production build (the dev server)', async () => {
+      process.env.NODE_ENV = 'development';
+      assertExactRoutesWithoutHtml(await register());
+    });
+
+    test('a locale that is not the default one', async () => {
+      assertExactRoutesWithoutHtml(await register({ locale: 'fr' }));
+    });
+
+    test('ssr: false is still a single prefix route there', async () => {
+      process.env.NODE_ENV = 'development';
+      const { routes } = await register({ options: { ssr: false } });
       assertPrefixRoute(routes);
+    });
+
+    test('ssr: "required" does not fail the build there, it falls back', async () => {
+      process.env.NODE_ENV = 'development';
+      let result;
+      const warnings = await captureWarnings(async () => {
+        result = await register({
+          spec: BROKEN_SPEC,
+          options: { ssr: 'required' },
+        });
+      });
+      assertPrefixRoute(result.routes);
+      assert.equal(warnings.length, 1);
+      assert.match(warnings[0], /Could not list the pages/);
+
       const other = await register({
         spec: BROKEN_SPEC,
         locale: 'fr',
         options: { ssr: 'required' },
-      });
+      }).catch((error) => error);
+      assert.ok(!(other instanceof Error), 'a locale build must not fail');
       assertPrefixRoute(other.routes);
     });
   });

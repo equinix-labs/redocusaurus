@@ -3,6 +3,10 @@ title: Migrating to V1
 sidebar_position: 4
 ---
 
+:::note
+This page describes the move to V1. For the move to Redoc 3 (V3), see [Migrating to V3](./migrating-to-v3.md). Build time rendering is described in [Build Time Rendering](./build-time-rendering.md).
+:::
+
 ## Options Changed
 
 1.`spec` - Can now be a path to a local file or an absolute url. You can now also point to an entrypoint for your multi-file OpenAPI definition and we will bundle it for you.

@@ -12,7 +12,7 @@ sidebar_position: 3
 
 Nothing to be done as a user. When you build the site, the plugin renders every tag and operation of each API to a static HTML page, with the styles it needs, and registers one route for each. Redoc 3 then takes over in the browser.
 
-This only happens in production builds (`docusaurus build`), and only for the default locale. In `docusaurus start` the pages are rendered in the browser.
+The HTML is only rendered in production builds (`docusaurus build`), and only for the default locale. In `docusaurus start` and in the other locales the same pages exist (one route per tag and operation, so a path that is not a page is a "Page Not Found" there too), but Redoc renders them in the browser.
 
 ## Options
 

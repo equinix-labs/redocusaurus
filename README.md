@@ -10,6 +10,8 @@
 
 [Redoc](https://github.com/redocly/redoc) for [Docusaurus](https://docusaurus.io/).
 
+Redocusaurus renders your OpenAPI specs with Redoc 3, and needs Node.js 22 or newer. Coming from Redoc 2? See the [migration guide](https://redocusaurus.vercel.app/docs/guides/migrating-to-v3).
+
 ## Usage
 
 Check the [documentation on the website](https://redocusaurus.vercel.app/docs)
@@ -26,11 +28,11 @@ A Docusaurus Preset that combines the below 2 packages to easily add API doc(s) 
 
 ### [Docusaurus Theme Redoc](./packages/docusaurus-theme-redoc)
 
-A wrapper around `RedocStandalone` to make it match the Docusaurus Theme with added support for Dark Mode.
+A wrapper around Redoc 3's `RedocStandalone` to make it follow the Docusaurus Theme (light and dark mode, fonts and colors), with path-based deep links.
 
 ### [Docusaurus Plugin Redoc](./packages/docusaurus-plugin-redoc)
 
-A content plugin that creates pages from your OpenAPI files or URLs and renders them using the Redoc component from the theme.
+A content plugin that creates pages from your OpenAPI files or URLs, renders every tag and operation to static HTML at build time, and hands the spec to the Redoc component from the theme in the browser.
 
 ### [Website](./website)
 

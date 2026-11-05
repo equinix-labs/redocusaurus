@@ -37,16 +37,17 @@ export interface PluginOptions extends PluginDirectUsageOptions {
   route?: string;
   normalizeUrl?: boolean;
   /**
-   * Render every tag and operation page to static HTML at build time, and
-   * register one exact route for each. Only applies to production builds of the
-   * default locale.
+   * Render every tag and operation page to static HTML at build time, with one
+   * exact route for each. HTML is rendered in production builds of the default
+   * locale; the dev server and other locales get the same exact routes, which
+   * render in the browser.
    *
    * - `true`: if Redoc can't be rendered on the server, warn and fall back to a
    *   client-rendered page (a single prefix route that renders any sub-path).
    * - `'required'`: fail the build instead. Use it when the web server has no
    *   fallback for sub-paths (every page must exist as a file), since a silent
    *   fallback would ship a site where every deep link is a 404.
-   * - `false`: never render on the server.
+   * - `false`: never render on the server, and use a single prefix route.
    * @default true
    */
   ssr?: boolean | 'required';

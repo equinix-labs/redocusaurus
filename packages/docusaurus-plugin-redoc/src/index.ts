@@ -27,7 +27,7 @@ import type { OpenAPISpec } from './types/redoc-compat';
 import { loadSpecWithConfig } from './loadSpec';
 import { loadRedoclyConfig } from './loadRedoclyConfig';
 import { addSpecRoutes, type SsrCssAsset } from './routes';
-import { trimOperationIds } from './specUtils';
+import { resolveDownloadUrl, trimOperationIds } from './specUtils';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const version = require('../package.json').version;
@@ -177,6 +177,7 @@ export default function redocPlugin(
           specPath: normalizeUrl([baseUrl, routePath]),
           modules,
           cssAssets: ssrCssAssets,
+          downloadUrl: resolveDownloadUrl(url, baseUrl, normalizeDownloadUrl),
         });
       }
     },

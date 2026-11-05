@@ -97,7 +97,26 @@ function Redoc(initProps: RedocProps): JSX.Element {
   };
 
   const { spec, className, themeId, optionsOverrides } = finalProps;
-  const { options, css, cssHref } = useSpecOptions(themeId, optionsOverrides);
+  const {
+    options: specOptions,
+    css,
+    cssHref,
+  } = useSpecOptions(themeId, optionsOverrides);
+
+  // Redoc 3 offers a download of the spec through `downloadUrls` (Redoc 2 took
+  // the spec's address as `specUrl`). A relative `url` is the bundled copy the
+  // plugin writes to the build, relative to `baseUrl` unless `normalizeUrl` is
+  // off. Options set by the site win.
+  const { url, normalizeUrl: normalizeDownloadUrl = true } = finalProps;
+  const downloadUrlWithBase = useBaseUrl(url ?? '');
+  const downloadUrl = normalizeDownloadUrl ? downloadUrlWithBase : url;
+  const options = useMemo(
+    () =>
+      url && specOptions.downloadUrls === undefined
+        ? { ...specOptions, downloadUrls: [{ url: downloadUrl }] }
+        : specOptions,
+    [specOptions, url, downloadUrl],
+  );
 
   // Redoc 3 routes by path (it mounts its own BrowserRouter), so it has to be
   // told where it lives. On the spec's own page that is the route the plugin

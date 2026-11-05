@@ -40,11 +40,34 @@ or anchors in a production build):
       types replaced with small local types, and `plugin/src/index.ts` split (the route
       registration is in `routes.ts`, `trimOperationIds` and the hash helper in
       `specUtils.ts`). The website output is byte-identical before and after the split.
-- [~] **4. The demo website builds and works with Redoc 3** (details below). It builds
-      now (Docusaurus 3.6.0, React 18.3.1, the `faster`/Rspack bundler) and the example
-      pages render. Left: update the remaining docs text and README that describe Redoc 2,
-      and review the pages the visual e2e checks (`website/snapshots.js`). The snapshot
-      baselines will all change and need the maintainer's approval.
+- [~] **4. The demo website builds and works with Redoc 3** (details below). Builds with
+      0 broken links or anchors (Docusaurus 3.6.0, React 18.3.1, the `faster`/Rspack bundler).
+      Done:
+      - Docs text updated: README and the preset's README (Redoc 3, Node 22+, link to the
+        migration guide), the plugin's README and the Plugin Options page (new `ssr`
+        option), the Introduction (features, upgrade link), the V1 guide (pointer to the V3
+        guide), and a "Downloading the spec" section in the V3 guide.
+      - Compared the three e2e pages with the live Redoc 2 site (screenshots, light mode).
+        Found and fixed: **the download link was missing**. Redoc 2 got it from `specUrl`;
+        the port dropped the spec's `url`. Now passed as Redoc 3's `downloadUrls` in the
+        browser and in the build-time render (`resolveDownloadUrl`, 5 tests).
+      Other findings from the comparison:
+      - **Embedded pages were cramped (fixed).** In `<ApiDocMdx>` (the nested example)
+        Redoc 3 kept its three columns inside Docusaurus's narrow docs column: the middle
+        column was about 300px and the title wrapped over 5 lines. The cause was a Redoc 2
+        leftover in `ApiDocMdx`: it set `theme.breakpoints`, which Redoc 3 ignores. It now
+        sets Redoc 3's `layout: 'stacked'` as a default, which a `layout` set by the site
+        overrides. Documented in the V3 guide and in "Showing Multiple APIs". Not covered
+        by a unit test (React component; checked with a screenshot).
+      - Redoc 3 shows the spec's `x-logo` and a search box in the sidebar, an overview card
+        (URL, support, license, servers) on the right, and a "Copy" button (Redoc 2 had
+        none of these). Expected, not a regression; mention in the PR description.
+      - The remote URL page's download link points at the remote spec itself.
+      Left: Percy runs only upstream (a Vercel preview and their token), so the baselines
+      can't be approved here. All three pages (`/examples/using-single-yaml/`,
+      `/examples/using-remote-url/`, `/docs/nested/nested-1`) will differ. Add before and
+      after screenshots (light and dark) to the PR description (item 16). Dark mode was not
+      re-captured here (headless Chrome did not switch the site to dark).
 - [x] **5. A changeset.** `.changeset/bright-routes-render.md`: a major bump for the three
       linked packages (`docusaurus-plugin-redoc`, `docusaurus-theme-redoc`, `redocusaurus`),
       listing the breaking changes and what is new, and linking the migration guide. Check
@@ -107,17 +130,56 @@ or anchors in a production build):
       fragile, and make it easy to turn off.
 - [~] **10. Compatibility matrix** (see the table below; most rows are tested now, the rest
       are listed there).
-- [~] **17. Declare the Node and peer requirements.** Done: `engines.node` is `>=22` in
-      the three packages and the root (Redoc 3 needs it; they said `>=18` and `>=14`), and
-      the Installation page lists the requirements. Left: decide how `react-router` is
-      declared (a dependency of the theme now, `^7.0.0`, which works with React 18.3,
-      while Redoc itself lists it as a peer, `^7 || ^8`), and whether the theme should
-      declare `react` and `react-dom` peers (it declares none today).
-- [ ] **18. Requests Redoc 3 makes at run time.** Besides telemetry (item 8) it loads the
-      "API docs by Redocly" badge image from `cdn.redoc.ly`, and its bundle references icon
-      sets on `cdn.redocly.com`. Find out which load in practice, whether there is an
-      option to avoid or hide them, and what that means for sites with a strict Content
-      Security Policy. Document it either way.
+- [x] **17. Declare the Node and peer requirements.** `engines.node` is `>=22` in the three
+      packages and the root (Redoc 3 needs it), and the Installation page lists the
+      requirements. Tested with yarn 4 (`nodeLinker: pnpm`, a strict symlinked layout like
+      pnpm's, fresh project with Docusaurus 3.6.0) using `yarn explain peer-requirements`.
+      The Redoc 3.0.1 bundle imports only `react`, `react/jsx-runtime`, `react-dom`,
+      `react-router` and `styled-components` at run time. Decisions:
+      - **`react-router` stays a dependency of the theme (`^7.0.0`), not a peer.** Redoc
+        wants `^7 || ^8` as a peer, but Docusaurus core depends on react-router 5.3.4 and
+        npm/yarn hoist it, so a peer on 7 would conflict. The dependency guarantees a copy
+        Redoc accepts, and the scoped webpack rule points Redoc at it.
+      - **`react` and `react-dom` are now peers** (`^18.3.0 || ^19.0.0`, Redoc's range) of
+        the theme and of the preset (which depends on the theme, so it has to pass them
+        on). Before, the strict check showed the theme not providing them to Redoc,
+        react-router and styled-components: with pnpm's default `auto-install-peers` that
+        can give Redoc a second copy of React, which breaks hooks.
+      - **`@redocly/config`** (a peer of Redoc, used for types only; the Redoc bundle does
+        not import it) is now a dependency of the theme, `^0.67.0`, the same as
+        openapi-core uses. It removes an unmet-peer warning for every yarn user.
+      - **`styled-components`** stays a dependency of the theme (a peer of Redoc).
+      - Removed from the theme because nothing imports them (Redoc 2 leftovers): `mobx`,
+        `postcss`, `postcss-prefix-selector`, `@types/postcss-prefix-selector`. The plugin's
+        dev-only leftovers (`mobx`, `react`, `styled-components`) are not shipped; left.
+      - After the change the only unmet peers on the strict check are upstream's:
+        `webpack` is not passed from the preset to the theme, and a project does not
+        provide `@docusaurus/theme-common` and `@docusaurus/utils` to the preset.
+      - **pnpm itself was not tested**: the registry blocks the pnpm download (HTTP 403),
+        which is not worked around. The yarn check above is the closest equivalent.
+- [x] **18. Requests Redoc 3 makes at run time.** Audited two ways: a scan of the Redoc
+      3.0.1 bundle for hosts, and Chrome's net log on the built website (home, overview,
+      operation and embedded pages; Chrome's own background traffic ignored). Findings:
+      - Always: `cdn.redoc.ly/redoc/logo-mini-full.svg` (`logo-mini.svg` when the sidebar is
+        collapsed), the "API docs by Redocly" badge, loaded after mount. **No option to
+        turn it off.** It hides itself if the image fails (`onError`), so a CSP block is
+        graceful. CSS can hide it but the image is still requested.
+      - Telemetry: `otel.cloud.redocly.com`, only with `disableTelemetry: false` (item 8).
+        None seen.
+      - Icons: `cdn.redocly.com/icons/fa/7.0.0` and `/icons/code/5.24.0`, only when a named
+        icon is rendered (a CSS background image, so `img-src`). **0 requests** on the
+        example pages: the built-in UI uses inline SVG.
+      - The spec's own `x-logo` and images load from wherever they point (the Petstore
+        example loads one from `redocly.github.io`).
+      - Not a request: the "Copy" menu's "Open in Claude/ChatGPT" opens `claude.ai/new` or
+        `chatgpt.com` on click, with the page text or the spec's URL in the request.
+        **No option to remove it** (`showPageActions` is set per node by Redoc, not a user
+        option). Matters for private specs.
+      - No requests for Redoc itself, fonts or styles. Redoc is MIT licensed with no
+        attribution requirement beyond the license notice.
+      Documented in a new guide, `website/docs/guides/network-requests.md` (CSP directives
+      per request), linked from the V3 guide. Possible follow-ups, not needed for the PR:
+      ask Redocly for an option to hide the badge and the Copy menu, or self-host the badge.
 
 ### D. Tests and decisions
 - [x] **11. Unit tests.** 67 tests in `packages/*/test`, using Node's built-in test runner
@@ -137,12 +199,26 @@ or anchors in a production build):
       Not covered: the React components and hooks (`Redoc`, `useSpecOptions`), the theme
       plugin's webpack rule and the `postBuild` file writing; those are exercised by the
       website build and the browser checks only.
-- [ ] **12. Contested defaults**, decide and document:
-      - `ssr` on by default (`true`), and whether a failed render should fall back or fail.
-      - Trimming `operationId`s (warn only, or opt-in?). Note: the trim used to change the
-        downloadable spec too; fixed, it now only affects the rendered pages.
-      - Server rendering for the default locale only (should be an option).
-      - Swap (Redoc replaces the server HTML on mount) or true hydration.
+- [x] **12. Contested defaults**, decided:
+      - **`ssr: true` by default** (a failed render warns and falls back to the browser-only
+        page; `'required'` fails the build). Same as Redoc 2, which rendered at build time.
+        Cost: more build time and space (the largest spec on a big site went from 2.7 MB
+        to 38 MB, builds 10 to 25 s longer).
+      - **`operationId` whitespace: trim and warn.** A route with whitespace at the edge
+        of a segment fails Docusaurus's link check, so leaving it breaks the build anyway.
+        The trim only affects the rendered pages, not the downloadable spec.
+      - **Dev server and other locales get exact routes without HTML.** The route list is
+        worked out in every mode (a worker, no rendering), so a path that is not a page
+        is a "Page Not Found" everywhere and links are checked in locale builds. HTML and
+        the stylesheet are written for production builds of the default locale only.
+        `ssr: false` is still a single prefix route. If the list can't be worked out the
+        build warns and falls back to the prefix route (`'required'` only applies where
+        HTML is rendered). No "all locales" option until someone asks.
+      - **Swap, not hydration, for this PR.** Redoc's `hydrate` is in the standalone bundle,
+        `RedocStandalone` renders nothing on its first client render, and the client's DOM
+        had a tag section the server HTML didn't. Hydration is a follow-up experiment.
+      - **`react-router` stays a dependency** (`^7.0.0`) and **`redoc` an exact pin**
+        (`3.0.1`).
 - [x] **13. Clean up the preset's types.** The preset imports `PluginOptions['ssr']` from
       the plugin now. (Pointing the website at the workspace removed the published copies
       the type import used to resolve.)
@@ -182,8 +258,8 @@ or anchors in a production build):
 | Swagger 2.0 JSON, single JSON and multi-file YAML specs, remote URL spec | tested (website examples) |
 | Several specs on one site | tested (32, and the website's 7) |
 | `<ApiDocMdx>` embedded in an MDX page, `@theme/Redoc` in a custom page | tested (website), after the base path fix below |
-| `docusaurus start` (dev server, client-side only) | tested (website): starts in seconds, deep pages render, any unknown sub-path returns 200 (known limitation) |
-| Other locales (server render is skipped) | not tested with the plugin |
+| `docusaurus start` (dev server, client-side only) | tested (website): starts in seconds, deep pages render, exact routes now, so an unknown sub-path shows Docusaurus's "Page Not Found" (the dev server still answers 200) |
+| Other locales (exact routes, HTML only for the default locale) | unit tested (routes); not built with the plugin in a multi-locale site |
 | Safari, Firefox | not tested |
 
 ## Website (item 4)

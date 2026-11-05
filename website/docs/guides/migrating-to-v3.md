@@ -31,7 +31,7 @@ What to do:
 Redoc 3 can render without a browser, so Redocusaurus renders **every tag and operation to its own static page** when you build, and registers one route for each (see [Build Time Rendering](./build-time-rendering.md)).
 
 - Unknown paths below your API's route are a real 404, and your host does not need a fallback rule for them.
-- This happens in production builds, for the default locale. `docusaurus start` renders in the browser.
+- The HTML is rendered in production builds, for the default locale. `docusaurus start` and the other locales have the same pages (so a path that is not a page is "Page Not Found"), rendered in the browser.
 - The new `ssr` option controls it: `true` (default), `'required'` (fail the build if the pages cannot be rendered) or `false`.
 - If an `operationId` in your spec has leading or trailing spaces, they are trimmed, with a warning that names the operation. Fix it in the spec.
 
@@ -54,9 +54,17 @@ theme: {
 
 See [Theme Options](../getting-started/theme-options.md).
 
+## Embedded APIs use a stacked layout
+
+Redoc 2 switched to two columns when `<ApiDocMdx>` was in a narrow docs page, through `theme.breakpoints` (ignored now). Redoc 3 has a `layout` option instead, and `<ApiDocMdx>` sets `layout: 'stacked'` unless you set `layout` yourself.
+
+## Downloading the spec
+
+Redoc 3 offers the download of the spec through its `downloadUrls` option instead of Redoc 2's `specUrl`. Redocusaurus sets it for you, to the copy of the spec it writes to your build (or to the spec's own `url`), and a download card appears in the API's overview. To use other links, set `downloadUrls` in your [Redoc options](../getting-started/theme-options.md#options-optional-object), and to remove the card, set `hideDownloadButtons: true`.
+
 ## Telemetry is off by default
 
-Redoc 3 can send usage events (page views, interactions, errors) to Redocly's servers. Redocusaurus turns this **off** by default. To turn it back on, set `disableTelemetry: false` (see [Theme Options](../getting-started/theme-options.md#telemetry)).
+Redoc 3 can send usage events (page views, interactions, errors) to Redocly's servers. Redocusaurus turns this **off** by default. To turn it back on, set `disableTelemetry: false` (see [Theme Options](../getting-started/theme-options.md#telemetry)). For everything else Redoc requests, see [Network Requests and CSP](./network-requests.md).
 
 ## Components removed
 

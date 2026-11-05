@@ -1,6 +1,10 @@
 const { describe, test } = require('node:test');
 const assert = require('node:assert/strict');
-const { shortHash, trimOperationIds } = require('../dist/specUtils');
+const {
+  resolveDownloadUrl,
+  shortHash,
+  trimOperationIds,
+} = require('../dist/specUtils');
 
 /** Run `fn` and return what it passed to `console.warn`. */
 function captureWarnings(fn) {
@@ -14,6 +18,42 @@ function captureWarnings(fn) {
   }
   return warnings;
 }
+
+describe('resolveDownloadUrl', () => {
+  test('puts a relative url below the base URL of the site', () => {
+    assert.equal(
+      resolveDownloadUrl('redocusaurus/pets.yaml', '/'),
+      '/redocusaurus/pets.yaml',
+    );
+    assert.equal(
+      resolveDownloadUrl('redocusaurus/pets.yaml', '/docs/'),
+      '/docs/redocusaurus/pets.yaml',
+    );
+  });
+
+  test('keeps an absolute url as it is', () => {
+    assert.equal(
+      resolveDownloadUrl('https://example.com/openapi.yaml', '/docs/'),
+      'https://example.com/openapi.yaml',
+    );
+    assert.equal(
+      resolveDownloadUrl('//example.com/openapi.yaml', '/docs/'),
+      '//example.com/openapi.yaml',
+    );
+  });
+
+  test('keeps a relative url as it is when normalizing is turned off', () => {
+    assert.equal(
+      resolveDownloadUrl('redocusaurus/pets.yaml', '/docs/', false),
+      'redocusaurus/pets.yaml',
+    );
+  });
+
+  test('has no address without a url', () => {
+    assert.equal(resolveDownloadUrl(undefined, '/'), undefined);
+    assert.equal(resolveDownloadUrl('', '/'), undefined);
+  });
+});
 
 describe('shortHash', () => {
   test('is 12 hex characters and stable', () => {
