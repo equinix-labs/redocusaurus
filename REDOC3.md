@@ -288,6 +288,21 @@ or anchors in a production build):
         had a tag section the server HTML didn't. Hydration is a follow-up experiment.
       - **`react-router` stays a dependency** (`^7.0.0`) and **`redoc` an exact pin**
         (`3.0.1`).
+      - **Path routing, not a `HashRouter`** (reviewer question; compared on a throwaway page
+        of the demo site). The Redoc docs say it reuses an app's router, and that wrapping it
+        in a `HashRouter` gives hash URLs; that works (direct links, clicking through, Back,
+        Forward and reload), and in hash mode Redoc maps Redoc 2 links itself, including the
+        tag-less `#operation/<id>` that our mapper does not handle. Against that: (1)
+        Docusaurus's link check cannot validate hash routes: with a valid and a made-up
+        `#/pet/...` link both are flagged as broken anchors, so with `onBrokenAnchors: 'throw'`
+        every API link fails the build or the check must be turned off for the whole site,
+        while with paths a good link passes and a made-up one fails the build. (2) The server
+        never sees a fragment, so a spec is one static page: the demo's hash page is a 9.5 KB
+        shell with no operation text (a path page of the same spec is 72.8 KB with it), there
+        are no per-operation pages in the sitemap or `llms.txt`, and search engines see one URL
+        per spec. Decision: keep paths. Possible follow-ups: teach the legacy mapper
+        `#operation/<id>` (the spec is available to look the tag up), and an opt-in hash mode
+        for sites that prefer it with `ssr: false`.
 - [x] **13. Clean up the preset's types.** The preset imports `PluginOptions['ssr']` from
       the plugin now. (Pointing the website at the workspace removed the published copies
       the type import used to resolve.)
