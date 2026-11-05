@@ -148,8 +148,38 @@ or anchors in a production build):
       - Known cost, not changed: Redoc reads the mode only when it mounts, so a switch from
         Docusaurus remounts Redoc (a keyed remount). On a very large spec that is slower
         than a live update. Revisit if it matters.
-- [~] **10. Compatibility matrix** (see the table below; most rows are tested now, the rest
-      are listed there).
+- [~] **10. Compatibility matrix** (see the table below). Every row is tested except
+      Safari and Firefox, which need a person with those browsers (Chrome is the only one
+      used so far). Manual check, on the website built with `yarn build:website` and served
+      with `docusaurus serve`, in each browser, light and dark:
+      1. `/examples/using-single-yaml/`: the page renders, the sidebar and search work.
+      2. Open `/examples/using-single-yaml/pet/getpetbyid` directly (a reload on it too):
+         the operation shows, and Back and Forward move between pages.
+      3. Old link `/examples/using-single-yaml/#tag/pet/operation/getPetById` redirects to
+         the path above.
+      4. Switch the Docusaurus theme (sun or moon in the navbar): Redoc follows. Use the
+         switch in Redoc's sidebar: Docusaurus follows. Reload: the mode stays.
+      5. The Download card links to `/redocusaurus/using-single-yaml.yaml`.
+      6. `/docs/nested/nested-1`: two columns (stacked), no squeezed title.
+      7. Console: no errors apart from blocked third-party requests.
+      Record the browser versions here when done.
+      Result: steps 1 to 7 pass in **Safari 27.2 (21625.2.8.18.4)**, **Firefox 159.0.1
+      (aarch64)** and **Chrome 156.0.8078.80 (arm64)**, with one finding. **Reloading a
+      link inside an API that is embedded in a page of your own returns a 404.** Checked by
+      collecting every link Redoc renders on each example page (after it mounts) and
+      requesting it: the five examples with their own `route` (`using-single-yaml`,
+      `using-remote-url`, `using-multi-file-yaml`, `using-single-json`,
+      `using-swagger-json`) have none; `/docs/nested/nested-1` (`<ApiDocMdx>`),
+      `/examples/custom-page/` (`@theme/ApiDoc`) and `/examples/custom-layout/`
+      (`@theme/Redoc`) 404 on every link inside them (for example
+      `/docs/nested/nested-1/pet/getpetbyid`). Redoc 3 routes by path below the page it is
+      on and a page of your own has no routes below it; Redoc 2's hashes survived a
+      reload. Documented in the guides. Options, not decided: (a) leave it and document
+      (done), (b) give embedded APIs a hash router (`HashRouter`, links like
+      `/docs/nested/nested-1#/pet/getpetbyid`: reload, sharing, Back and Forward work; needs
+      the legacy mapper to target it, and has not been tried), (c) a memory router (reload
+      works, but no shareable operation links and no Back and Forward). The large consuming
+      site tested does not embed APIs, so this does not affect it.
 - [x] **17. Declare the Node and peer requirements.** `engines.node` is `>=22` in the three
       packages and the root (Redoc 3 needs it), and the Installation page lists the
       requirements. Tested with yarn 4 (`nodeLinker: pnpm`, a strict symlinked layout like
@@ -249,7 +279,7 @@ or anchors in a production build):
       commits (`2.6.0-redoc3.N`).
 - [ ] **15. Lockfile.** Regenerate `yarn.lock` from upstream's and only keep the changes
       the port needs.
-- [ ] **19. Verify nothing sensitive is leaked, including hints.** Before submitting, scan
+- [ ] **19. Verify nothing sensitive is leaked, including hints.** (A scan of the pushed history found one: commit `7c51957` added an internal repo name to this file. Fixed at the tip; it stays in that commit until the history is rebuilt in item 14, so scan the history again then.) Before submitting, scan
       the final diff, every commit message and author, the changeset, docs, examples, test
       fixtures, `yarn.lock` (registry URLs), config files and the PR description for
       corporate data, internal names, hostnames, registries, tooling or infrastructure
@@ -279,8 +309,8 @@ or anchors in a production build):
 | Several specs on one site | tested (32, and the website's 7) |
 | `<ApiDocMdx>` embedded in an MDX page, `@theme/Redoc` in a custom page | tested (website), after the base path fix below |
 | `docusaurus start` (dev server, client-side only) | tested (website): starts in seconds, deep pages render, exact routes now, so an unknown sub-path shows Docusaurus's "Page Not Found" (the dev server still answers 200) |
-| Other locales (exact routes, HTML only for the default locale) | unit tested (routes); not built with the plugin in a multi-locale site |
-| Safari, Firefox | not tested |
+| Other locales (exact routes, HTML only for the default locale) | tested (website, temporary `i18n` config with `en`, `fr`, `ja`): builds with the default `onBrokenLinks: 'throw'`, `fr` and `ja` have the same 32 pages as `en` as small client-rendered shells (about 14 KB against 73 KB), no server-render stylesheet, a deep link renders in the browser, an unknown path is a real 404 |
+| Safari 27.2, Firefox 159.0.1, Chrome 156 (macOS, arm64) | tested by hand (the 7 steps above): pass, apart from the embedded reload 404 below |
 
 ## Website (item 4)
 

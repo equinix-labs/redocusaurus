@@ -58,6 +58,8 @@ See [Theme Options](../getting-started/theme-options.md).
 
 Redoc 2 switched to two columns when `<ApiDocMdx>` was in a narrow docs page, through `theme.breakpoints` (ignored now). Redoc 3 has a `layout` option instead, and `<ApiDocMdx>` sets `layout: 'stacked'` unless you set `layout` yourself.
 
+Redoc 2 used hash links, which survive a reload. Redoc 3 uses paths, so on a page where you embed the API yourself (`<ApiDocMdx>`, or `@theme/Redoc` or `@theme/ApiDoc` in a custom page), reloading a link to an operation inside it returns a 404. See [Showing Multiple APIs](./multiple-apis.md#links-inside-an-embedded-api).
+
 ## Downloading the spec
 
 Redoc 3 offers the download of the spec through its `downloadUrls` option instead of Redoc 2's `specUrl`. Redocusaurus sets it for you, to the copy of the spec it writes to your build (or to the spec's own `url`), and a download card appears in the API's overview. To use other links, set `downloadUrls` in your [Redoc options](../getting-started/theme-options.md#options-optional-object), and to remove the card, set `hideDownloadButtons: true`.
