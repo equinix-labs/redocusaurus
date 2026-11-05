@@ -153,6 +153,19 @@ describe('getGlobalData', () => {
     assert.equal(data.options.disableTelemetry, false);
   });
 
+  test('keeps the color mode in step with Docusaurus by default', async () => {
+    const data = await freshGetGlobalData()({ options: {} });
+    assert.equal(data.syncColorMode, true);
+  });
+
+  test('lets a site turn the color mode sync off', async () => {
+    const data = await freshGetGlobalData()({
+      syncColorMode: false,
+      options: {},
+    });
+    assert.equal(data.syncColorMode, false);
+  });
+
   test('lets a site override the other defaults', async () => {
     const data = await freshGetGlobalData()({
       options: { expandSingleSchemaField: false },

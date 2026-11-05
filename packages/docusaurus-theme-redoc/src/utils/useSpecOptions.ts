@@ -33,7 +33,12 @@ export function useSpecOptions(
     Object.values(defaultThemeOptions)[0];
 
   const result = useMemo(() => {
-    const { css, cssHref, options: redocOptions } = themeOptions;
+    const {
+      css,
+      cssHref,
+      syncColorMode = true,
+      options: redocOptions,
+    } = themeOptions;
 
     // When a string CSS selector is given for scrollYOffset, Redoc caches
     // the element height at AppStore creation time (during React render).
@@ -62,7 +67,7 @@ export function useSpecOptions(
       optionsOverrides,
     );
 
-    return { options, css, cssHref };
+    return { options, css, cssHref, syncColorMode };
   }, [isBrowser, themeOptions, optionsOverrides]);
 
   return result;

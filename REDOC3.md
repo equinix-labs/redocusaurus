@@ -124,10 +124,30 @@ or anchors in a production build):
       and the build-time render passes it too. After the change the same page load makes 0
       requests to that host. To confirm with the maintainer when we open the PR, since it
       is a default that differs from Redoc's own.
-- [ ] **9. Reliance on Redoc internals.** The color mode sync uses
-      `localStorage['redoc.colorMode']` and the class on `<html>`, watched with a
-      `MutationObserver`. Look for a supported option, or isolate it, document it as
-      fragile, and make it easy to turn off.
+- [x] **9. Reliance on Redoc internals.** Redoc 3 has no option for its color mode (checked
+      against the 3.0.1 bundle). It keeps the mode in its app store, mirrors it to
+      `localStorage['redoc.colorMode']`, reads that key only when it mounts, and applies it
+      as a `light` or `dark` class on `<html>`; its own inline no-flash script in the
+      server-rendered HTML relies on the same two things, so they are a stable de facto
+      contract. So there is nothing supported to switch to. What was done:
+      - **Isolated:** everything that touches those internals is in
+        `utils/redocColorMode.ts` (the key, the class names, and `reconcileColorMode`, the
+        pure rule for what to do with the `<html>` class) with a header listing exactly
+        what it relies on. The hook is `utils/useRedocColorModeSync.ts`, and `Redoc.tsx`
+        no longer contains any of it.
+      - **Easy to turn off:** new theme option `syncColorMode` (default `true`). With
+        `false` it writes nothing, watches nothing and does not remount Redoc; Redoc
+        follows its own mode (the OS, or its own switch). Documented in Theme Options and
+        the theme README, and in the changeset. Checked in a browser: with it on, the
+        `<html>` class and `data-theme` agree in dark and light; with it off and the OS in
+        dark mode, Docusaurus in light mode leaves Redoc in dark.
+      - **Guarded:** `test/redocColorMode.test.js` has a contract test that reads the
+        installed Redoc bundle and fails if the key, the `light`/`dark` names or the class
+        application change (`redoc` is pinned, so an upgrade is deliberate), plus tests of
+        the reconcile rule and of storing the mode. Checked by breaking the code.
+      - Known cost, not changed: Redoc reads the mode only when it mounts, so a switch from
+        Docusaurus remounts Redoc (a keyed remount). On a very large spec that is slower
+        than a live update. Revisit if it matters.
 - [~] **10. Compatibility matrix** (see the table below; most rows are tested now, the rest
       are listed there).
 - [x] **17. Declare the Node and peer requirements.** `engines.node` is `>=22` in the three

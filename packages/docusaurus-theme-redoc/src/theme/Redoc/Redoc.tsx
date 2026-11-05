@@ -1,9 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useLocation } from '@docusaurus/router';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import Head from '@docusaurus/Head';
-import { useColorMode } from '@docusaurus/theme-common';
 import useSpecData from '@theme/useSpecData';
 import clsx from 'clsx';
 import '../../global';
@@ -11,70 +10,34 @@ import { RedocStandalone } from 'redoc';
 import type { RedocProps } from '../../types/common';
 import { useSpecOptions } from '../../utils/useSpecOptions';
 import { redirectLegacyHash } from '../../utils/legacyHash';
+import { useRedocColorModeSync } from '../../utils/useRedocColorModeSync';
 import './styles.css';
 
 type RedocClientProps = {
   spec: React.ComponentProps<typeof RedocStandalone>['spec'];
   options: React.ComponentProps<typeof RedocStandalone>['options'];
   basePath: string;
+  syncColorMode: boolean;
 };
 
-// Redoc 3 keeps its own color mode: it reads `localStorage['redoc.colorMode']`
-// (falling back to the OS preference) and applies it as a `light` or `dark`
-// class on <html>. Keep it in step with Docusaurus's `data-theme` in both
-// directions.
-const REDOC_COLOR_MODE_KEY = 'redoc.colorMode';
-const REDOC_MODE_CLASSES = ['light', 'dark'] as const;
-
-function RedocClient({ spec, options, basePath }: RedocClientProps) {
-  const { colorMode, setColorMode } = useColorMode();
-
+function RedocClient({
+  spec,
+  options,
+  basePath,
+  syncColorMode,
+}: RedocClientProps) {
   // Links from Redoc 2 use `#tag/...` anchors. Map them to Redoc 3 paths before
   // it mounts and reads the URL; the initializer runs once, before first render.
   useState(() => redirectLegacyHash(basePath));
 
-  // Docusaurus -> Redoc: Redoc reads its mode when it mounts, so store the
-  // current one before it renders and remount it (key below) when it changes.
-  useMemo(() => {
-    try {
-      window.localStorage.setItem(REDOC_COLOR_MODE_KEY, colorMode);
-    } catch {
-      // storage unavailable: Redoc falls back to the OS preference
-    }
-  }, [colorMode]);
-
-  // Redoc -> Docusaurus: Redoc's own toggle changes the class on <html>. Also
-  // repairs the class if something else overwrites it.
-  useEffect(() => {
-    const html = document.documentElement;
-    const observer = new MutationObserver(() => {
-      const mode = REDOC_MODE_CLASSES.find((c) => html.classList.contains(c));
-      if (!mode) {
-        // Docusaurus re-applies its own <html> class on navigation (back and
-        // forward included), which wipes Redoc's class and leaves its styles
-        // unmatched. Put the current mode back.
-        html.classList.add(colorMode);
-      } else if (mode !== colorMode) {
-        setColorMode(mode);
-      }
-    });
-    observer.observe(html, { attributes: true, attributeFilter: ['class'] });
-    return () => {
-      observer.disconnect();
-    };
-  }, [colorMode, setColorMode]);
-
-  // Redoc leaves its class on <html> for the whole page; drop it on the way out.
-  useEffect(
-    () => () => {
-      document.documentElement.classList.remove(...REDOC_MODE_CLASSES);
-    },
-    [],
-  );
+  // Redoc 3 keeps its own color mode and ignores Docusaurus's `data-theme`, so
+  // keep the two in step (see utils/redocColorMode.ts for how, and what it relies
+  // on). The key remounts Redoc when the mode changes.
+  const colorModeKey = useRedocColorModeSync(syncColorMode);
 
   return (
     <RedocStandalone
-      key={colorMode}
+      key={colorModeKey}
       spec={spec}
       options={options}
       basePath={basePath}
@@ -101,6 +64,7 @@ function Redoc(initProps: RedocProps): JSX.Element {
     options: specOptions,
     css,
     cssHref,
+    syncColorMode,
   } = useSpecOptions(themeId, optionsOverrides);
 
   // Redoc 3 offers a download of the spec through `downloadUrls` (Redoc 2 took
@@ -165,7 +129,12 @@ function Redoc(initProps: RedocProps): JSX.Element {
       </Head>
       <BrowserOnly fallback={fallback}>
         {() => (
-          <RedocClient spec={spec} options={options} basePath={basePath} />
+          <RedocClient
+            spec={spec}
+            options={options}
+            basePath={basePath}
+            syncColorMode={syncColorMode}
+          />
         )}
       </BrowserOnly>
     </div>

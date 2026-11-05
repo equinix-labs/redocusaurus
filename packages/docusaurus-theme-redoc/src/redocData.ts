@@ -153,6 +153,7 @@ export async function getGlobalData({
   primaryColor,
   primaryColorDark = primaryColor,
   cssVariables,
+  syncColorMode = true,
   theme: customThemeDeprecated,
   options,
 }: ThemeOptions): Promise<GlobalData> {
@@ -177,5 +178,6 @@ export async function getGlobalData({
   return {
     options: merge({}, defaultOptions, omit(redoclyOptions, 'theme')),
     css: buildThemeCss({ primaryColor, primaryColorDark, cssVariables }),
+    syncColorMode,
   };
 }

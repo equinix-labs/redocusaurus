@@ -37,6 +37,15 @@ export interface ThemeOptions {
    */
   cssVariables?: CssVariables;
   /**
+   * Keep Redoc's light and dark mode in step with Docusaurus's, in both
+   * directions (Redoc 3 keeps its own mode). Redoc has no option for this, so it
+   * relies on how Redoc stores and applies its mode (see
+   * `utils/redocColorMode.ts`). Set it to `false` if that stops working: Redoc
+   * then follows its own mode (the OS preference, or its own switcher).
+   * @default true
+   */
+  syncColorMode?: boolean;
+  /**
    * The Redoc 2 theme object. Redoc 3 has no such option, so this does nothing
    * (a warning says so at build time).
    * @deprecated Use `primaryColor` and `cssVariables`
@@ -48,6 +57,8 @@ export type GlobalData = {
   options: RedocRawOptions;
   /** Stylesheet that themes Redoc, see `buildThemeCss` */
   css: string;
+  /** Whether Redoc's color mode follows Docusaurus's, see `ThemeOptions` */
+  syncColorMode: boolean;
   /**
    * Where the stylesheet is served from, in a production build. Without it (the
    * dev server) the pages put `css` in a `<style>` tag.

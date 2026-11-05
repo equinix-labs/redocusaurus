@@ -73,6 +73,12 @@ Redoc 3 is themed with CSS variables, so by default the API pages follow your Do
      dark: { 'bg-color': '#000' },
    },
    /**
+   * Keep Redoc's light/dark mode in step with Docusaurus's (default `true`).
+   * Redoc 3 has no option for this, so it relies on how Redoc stores its mode;
+   * set to `false` if a Redoc update breaks it.
+   */
+   syncColorMode: true,
+   /**
    * Options to pass to redoc (usually set in `redocly.yaml` instead)
    * @see https://redocly.com/docs/redoc/config/
    */
@@ -91,6 +97,10 @@ Optional way to change the highlighted color used by Redoc in dark mode. Default
 ### cssVariables (optional, object)
 
 Set any of the CSS variables that Redoc 3 uses for its theme. `light` applies in both modes, and `dark` overrides it in dark mode. Names can be written with or without the leading `--`.
+
+### syncColorMode (optional, boolean, default `true`)
+
+Keeps Redoc 3's light and dark mode in step with Docusaurus's, in both directions. Redoc has no option for this, so it relies on the `redoc.colorMode` key in `localStorage` and the `light`/`dark` class on `<html>`. Set it to `false` if a Redoc update breaks it: Redoc then follows its own mode.
 
 ### options (optional, object)
 

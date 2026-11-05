@@ -33,6 +33,20 @@ theme: {
 
 A value that contains `;`, `{` or `}` is skipped with a warning.
 
+### syncColorMode (optional, boolean, default `true`)
+
+Redoc 3 keeps its own light and dark mode and ignores Docusaurus's. By default Redocusaurus keeps the two in step in both directions: when the reader switches Docusaurus's mode, Redoc follows, and when they use the switch in Redoc's sidebar, Docusaurus follows.
+
+Redoc 3 has no option for this, so it relies on how Redoc stores and applies its mode: the `redoc.colorMode` key in `localStorage`, and a `light` or `dark` class on `<html>`. These are not documented, and a test checks that the Redoc version in use still behaves that way. If a Redoc update ever breaks the sync (for example the API pages stay in the wrong mode), set it to `false`:
+
+```ts
+theme: {
+  syncColorMode: false,
+},
+```
+
+Redoc then follows its own mode (the reader's OS preference, or its own switch) and the rest of the page follows Docusaurus's. The colors you set with `primaryColor` and `cssVariables` still follow Docusaurus's mode.
+
 ### theme (optional, object)
 
 :::warning
