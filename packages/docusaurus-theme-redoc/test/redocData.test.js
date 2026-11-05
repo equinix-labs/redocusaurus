@@ -128,6 +128,56 @@ describe('buildThemeCss', () => {
   });
 });
 
+describe('buildThemeCss on narrow screens', () => {
+  /** The declarations inside the narrow-screen media rule, or undefined. */
+  function narrowRule(css) {
+    const match = /@media \(max-width:600px\)\{html:root\{([^}]*)\}\}/.exec(
+      css,
+    );
+    return match ? match[1] : undefined;
+  }
+
+  test('lowers the heading sizes, so a title is not broken in the middle of a word', () => {
+    const rule = narrowRule(buildThemeCss({}));
+    assert.ok(rule, 'no narrow-screen rule');
+    assert.match(rule, /--h1-font-size:26px/);
+    assert.match(rule, /--h1-line-height:32px/);
+    assert.match(rule, /--h2-font-size:22px/);
+  });
+
+  test('comes last, so it does not change the tokens of wide screens', () => {
+    const css = buildThemeCss({ primaryColor: '#1890ff' });
+    assert.ok(css.indexOf('@media') > css.indexOf('html:root{'));
+    assert.equal(tokenIn(css, 'html:root', '--h1-font-size'), undefined);
+  });
+
+  test('leaves a heading token the site sets itself alone', () => {
+    const css = buildThemeCss({
+      cssVariables: { light: { 'h1-font-size': '40px' } },
+    });
+    assert.equal(tokenIn(css, 'html:root', '--h1-font-size'), '40px');
+    const rule = narrowRule(css);
+    assert.doesNotMatch(rule, /--h1-font-size/);
+    // the others are still lowered
+    assert.match(rule, /--h2-font-size:22px/);
+  });
+
+  test('has no rule when the site sets all of the tokens', () => {
+    const css = buildThemeCss({
+      cssVariables: {
+        light: {
+          '--h1-font-size': '1px',
+          '--h1-line-height': '1px',
+          '--h2-font-size': '1px',
+          '--h2-line-height': '1px',
+        },
+      },
+    });
+    assert.equal(narrowRule(css), undefined);
+    assert.doesNotMatch(css, /@media/);
+  });
+});
+
 describe('getGlobalData', () => {
   // The deprecation warning is printed once per process, so load a fresh copy
   // of the module for each test.

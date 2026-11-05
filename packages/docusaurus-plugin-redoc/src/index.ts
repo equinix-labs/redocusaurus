@@ -177,7 +177,12 @@ export default function redocPlugin(
           specPath: normalizeUrl([baseUrl, routePath]),
           modules,
           cssAssets: ssrCssAssets,
-          downloadUrl: resolveDownloadUrl(url, baseUrl, normalizeDownloadUrl),
+          downloadUrl: resolveDownloadUrl(
+            url,
+            baseUrl,
+            normalizeDownloadUrl,
+            normalizeUrl([baseUrl, routePath]),
+          ),
         });
       }
     },

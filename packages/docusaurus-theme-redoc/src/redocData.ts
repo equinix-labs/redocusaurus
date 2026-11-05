@@ -103,6 +103,21 @@ function declarations(variables: Record<string, string>): string {
  * selectors (`html:root`, `html:root.dark`) win over Redoc's own (`:root`,
  * `:root.dark`).
  */
+/**
+ * Redoc's heading sizes (36px for a page title) leave no room on a phone: the
+ * title shares its row with the Copy button, so in the narrow column of a docs
+ * site a word like "Automatic" does not fit and is broken in the middle (Redoc
+ * allows a break anywhere). Smaller headings on narrow screens fix that, using
+ * only Redoc's documented tokens. A token the site sets itself is left alone.
+ */
+export const NARROW_SCREEN = '600px';
+export const NARROW_TOKENS: Record<string, string> = {
+  '--h1-font-size': '26px',
+  '--h1-line-height': '32px',
+  '--h2-font-size': '22px',
+  '--h2-line-height': '28px',
+};
+
 export function buildThemeCss({
   primaryColor,
   primaryColorDark = primaryColor,
@@ -124,7 +139,13 @@ export function buildThemeCss({
   const darkCss = Object.keys(dark).length
     ? `html:root.dark{${declarations(dark)}}`
     : '';
-  return `html:root{${declarations(light)}}${darkCss}`;
+  const narrow = Object.fromEntries(
+    Object.entries(NARROW_TOKENS).filter(([name]) => !(name in light)),
+  );
+  const narrowCss = Object.keys(narrow).length
+    ? `@media (max-width:${NARROW_SCREEN}){html:root{${declarations(narrow)}}}`
+    : '';
+  return `html:root{${declarations(light)}}${darkCss}${narrowCss}`;
 }
 
 let warnedAboutTheme = false;

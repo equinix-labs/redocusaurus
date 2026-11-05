@@ -11,6 +11,7 @@ import type { RedocProps } from '../../types/common';
 import { useSpecOptions } from '../../utils/useSpecOptions';
 import { redirectLegacyHash } from '../../utils/legacyHash';
 import { useRedocColorModeSync } from '../../utils/useRedocColorModeSync';
+import { pickDownloadUrl } from '../../utils/downloadUrl';
 import './styles.css';
 
 type RedocClientProps = {
@@ -67,21 +68,6 @@ function Redoc(initProps: RedocProps): JSX.Element {
     syncColorMode,
   } = useSpecOptions(themeId, optionsOverrides);
 
-  // Redoc 3 offers a download of the spec through `downloadUrls` (Redoc 2 took
-  // the spec's address as `specUrl`). A relative `url` is the bundled copy the
-  // plugin writes to the build, relative to `baseUrl` unless `normalizeUrl` is
-  // off. Options set by the site win.
-  const { url, normalizeUrl: normalizeDownloadUrl = true } = finalProps;
-  const downloadUrlWithBase = useBaseUrl(url ?? '');
-  const downloadUrl = normalizeDownloadUrl ? downloadUrlWithBase : url;
-  const options = useMemo(
-    () =>
-      url && specOptions.downloadUrls === undefined
-        ? { ...specOptions, downloadUrls: [{ url: downloadUrl }] }
-        : specOptions,
-    [specOptions, url, downloadUrl],
-  );
-
   // Redoc 3 routes by path (it mounts its own BrowserRouter), so it has to be
   // told where it lives. On the spec's own page that is the route the plugin
   // registered. When Redoc is embedded in another page (`ApiDocMdx` in an MDX
@@ -91,6 +77,25 @@ function Redoc(initProps: RedocProps): JSX.Element {
   const { pathname } = useLocation();
   // `useBaseUrl` returns undefined when there is no route to resolve
   const routeBaseUrl = (useBaseUrl(finalProps.route) ?? '').replace(/\/+$/, '');
+
+  // Redoc 3 offers a download of the spec through `downloadUrls` (Redoc 2 took
+  // the spec's address as `specUrl`). Options set by the site win. See
+  // `pickDownloadUrl` for how a relative `url` is read.
+  const { url, normalizeUrl: normalizeDownloadUrl = true } = finalProps;
+  const withBaseUrl = useBaseUrl(url ?? '');
+  const downloadUrl = pickDownloadUrl({
+    url,
+    normalize: normalizeDownloadUrl,
+    withBaseUrl,
+    routeBaseUrl,
+  });
+  const options = useMemo(
+    () =>
+      downloadUrl && specOptions.downloadUrls === undefined
+        ? { ...specOptions, downloadUrls: [{ url: downloadUrl }] }
+        : specOptions,
+    [specOptions, downloadUrl],
+  );
   const currentPath = pathname.replace(/\/+$/, '');
   const isSpecPage =
     Boolean(finalProps.route) &&

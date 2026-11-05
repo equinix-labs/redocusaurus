@@ -16,20 +16,28 @@ const HTTP_METHODS = [
 /**
  * The address of the downloadable copy of a spec. A relative `url` (the bundled
  * copy the plugin writes to the build) is relative to the site's `baseUrl`, so
- * prefix it, unless `normalize` is turned off. An absolute `url` is used as is.
+ * prefix it. With `normalize` turned off it is relative to the API's route
+ * (`specPath`, with the `baseUrl`), where a spec file kept next to the page ends
+ * up. It can't be left relative to the page: Redoc 3 has a page per tag and
+ * operation, and would read `openapi.yaml` against each. An absolute `url` is
+ * used as is. Keep in step with `pickDownloadUrl` in the theme.
  */
 export function resolveDownloadUrl(
   url: string | undefined,
   baseUrl: string,
   normalize = true,
+  specPath?: string,
 ): string | undefined {
   if (!url) {
     return undefined;
   }
-  if (!normalize || /^([a-z][a-z\d+.-]*:|\/\/)/i.test(url)) {
+  if (/^([a-z][a-z\d+.-]*:|\/\/)/i.test(url)) {
     return url;
   }
-  return normalizeUrl([baseUrl, url]);
+  if (normalize) {
+    return normalizeUrl([baseUrl, url]);
+  }
+  return specPath ? normalizeUrl([specPath, url]) : url;
 }
 
 /** Short stable hash, for data file names. */

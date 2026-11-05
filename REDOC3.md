@@ -63,6 +63,25 @@ or anchors in a production build):
         (URL, support, license, servers) on the right, and a "Copy" button (Redoc 2 had
         none of these). Expected, not a regression; mention in the PR description.
       - The remote URL page's download link points at the remote spec itself.
+      - **Download link bug found by the large consuming site (fixed).** Its specs set
+        `url: 'openapi.yaml'` with `normalizeUrl: false`, a link relative to the page, which
+        was right on the overview and wrong on every tag and operation page: Redoc 3's Copy
+        menu builds the "Open in Claude/ChatGPT" prompt from `downloadUrls[0].url` read
+        against `document.baseURI`, so on `/api-catalog/x/tag/` it asked for
+        `/api-catalog/x/tag/openapi.yaml` (404). A relative URL with `normalizeUrl: false`
+        is now relative to the API's route (`/api-catalog/x/openapi.yaml`), in the plugin
+        (`resolveDownloadUrl`) and the theme (`pickDownloadUrl`), 8 tests.
+      - **Mobile titles broke mid-word (fixed).** At 375px (Percy's narrow width) the page
+        title shares its row with Redoc 3's Copy button, so it got about 170px at Redoc's
+        36px size and Redoc's `overflow-wrap: anywhere` split words ("Automati / c Page").
+        The theme stylesheet now lowers `--h1-font-size` and `--h2-font-size` (and their
+        line heights) up to 600px wide, using only Redoc's tokens, unless the site sets
+        them itself. 4 tests. Found by capturing with real viewport emulation: headless
+        Chrome's `--window-size` has a 500px minimum and crops, so use
+        `Emulation.setDeviceMetricsOverride` (the capture script is in the screenshot folder).
+      Before and after screenshots (1280px and 375px, light and dark, the three Percy
+      pages, against the live Redoc 2 site) were captured and are kept outside the repo, to be
+      attached to the final PR description (item 16).
       Left: Percy runs only upstream (a Vercel preview and their token), so the baselines
       can't be approved here. All three pages (`/examples/using-single-yaml/`,
       `/examples/using-remote-url/`, `/docs/nested/nested-1`) will differ. Add before and

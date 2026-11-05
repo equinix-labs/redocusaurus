@@ -42,10 +42,35 @@ describe('resolveDownloadUrl', () => {
     );
   });
 
-  test('keeps a relative url as it is when normalizing is turned off', () => {
+  test('without normalizing, a relative url is relative to the API route, not the page', () => {
+    // Redoc 3 has a page per tag and operation: `openapi.yaml` read against
+    // /api/pets/pets would be /api/pets/pets/openapi.yaml, which 404s
+    assert.equal(
+      resolveDownloadUrl('openapi.yaml', '/', false, '/api/pets'),
+      '/api/pets/openapi.yaml',
+    );
+    assert.equal(
+      resolveDownloadUrl('openapi.yaml', '/docs/', false, '/docs/api/pets'),
+      '/docs/api/pets/openapi.yaml',
+    );
+  });
+
+  test('without normalizing and without a route, a relative url is left alone', () => {
     assert.equal(
       resolveDownloadUrl('redocusaurus/pets.yaml', '/docs/', false),
       'redocusaurus/pets.yaml',
+    );
+  });
+
+  test('without normalizing, an absolute url is still left alone', () => {
+    assert.equal(
+      resolveDownloadUrl(
+        'https://example.com/openapi.yaml',
+        '/',
+        false,
+        '/api/pets',
+      ),
+      'https://example.com/openapi.yaml',
     );
   });
 

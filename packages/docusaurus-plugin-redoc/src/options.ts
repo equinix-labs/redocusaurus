@@ -35,6 +35,14 @@ export interface PluginOptions extends PluginDirectUsageOptions {
   spec: string;
   url?: string;
   route?: string;
+  /**
+   * By default a relative `url` is relative to the site's `baseUrl`. Set this to
+   * `false` to keep it relative to the API's `route` instead (for a spec file
+   * that sits next to the page, e.g. `openapi.yaml` for `/api/pets` is
+   * `/api/pets/openapi.yaml`). It is never read against the page the reader is
+   * on, because every tag and operation is a page of its own.
+   * @default true
+   */
   normalizeUrl?: boolean;
   /**
    * Render every tag and operation page to static HTML at build time, with one

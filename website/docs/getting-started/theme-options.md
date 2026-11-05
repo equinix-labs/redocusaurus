@@ -33,6 +33,8 @@ theme: {
 
 A value that contains `;`, `{` or `}` is skipped with a warning.
 
+On screens up to 600px wide the page title and the section headings use smaller sizes (`--h1-font-size` 26px, `--h2-font-size` 22px, and their line heights), because Redoc's own sizes leave no room on a phone and a word like "Automatic" is broken in the middle. Set any of those tokens in `cssVariables.light` to use your own size at every width.
+
 ### syncColorMode (optional, boolean, default `true`)
 
 Redoc 3 keeps its own light and dark mode and ignores Docusaurus's. By default Redocusaurus keeps the two in step in both directions: when the reader switches Docusaurus's mode, Redoc follows, and when they use the switch in Redoc's sidebar, Docusaurus follows.
