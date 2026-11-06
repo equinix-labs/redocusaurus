@@ -11,8 +11,3 @@ theme:
   # See https://redocly.com/docs/redoc/config/
   openapi:
     disableSearch: true
-    # See https://redocly.com/docs/api-reference-docs/configuration/theming/
-    theme:
-      colors:
-        primary:
-          main: '#32329f'

@@ -1,6 +1,5 @@
 import type { Props as LayoutProps } from '@theme/Layout';
-import type { ObjectDescriptionProps, RedocRawOptions } from 'redoc';
-import type { OpenAPISpec } from 'redoc/typings/types';
+import type { RedocRawOptions, OpenAPISpec } from './redoc-compat';
 
 export type ParsedSpec = OpenAPISpec;
 
@@ -30,6 +29,10 @@ export interface SpecProps {
    * @deprecated TODO: Do the normalization at build time rather than in components
    */
   normalizeUrl?: boolean;
+  /**
+   * Route the spec page is served at. Redoc 3 routes by path below it.
+   */
+  route?: string;
 }
 
 export interface MdxProps {
@@ -52,36 +55,24 @@ export interface ServerRedocProps extends SpecProps {
   optionsOverrides?: RedocRawOptions;
 }
 
-export interface RedocProps extends Omit<ServerRedocProps, 'spec'>, MdxProps {}
+/**
+ * HTML rendered at build time by docusaurus-plugin-redoc (see `ssr` option).
+ * Shown by the server render and the first client render, until Redoc mounts.
+ */
+export interface SsrContent {
+  /** Rendered markup of the page */
+  html: string;
+  /** URL of the stylesheet (styled-components rules) the markup needs */
+  cssHref?: string;
+}
 
-export type ApiSchemaProps = Omit<
-  ObjectDescriptionProps,
-  'parser' | 'options' | 'schemaRef'
-> &
-  MdxProps & {
-    /**
-     * Show the example or not
-     */
-    example?: boolean;
-    /**
-     * Ref to the schema
-     */
-    pointer: ObjectDescriptionProps['schemaRef'];
-  };
-
-export type ApiOperationProps = MdxProps & {
-  /**
-   * Show the example or not
-   */
-  example?: boolean;
-
-  /**
-   * Ref to the operation
-   */
-  pointer: string;
-};
+export interface RedocProps extends Omit<ServerRedocProps, 'spec'>, MdxProps {
+  ssr?: SsrContent;
+}
 
 export type ApiDocProps = {
   specProps: SpecProps;
   layoutProps?: Omit<LayoutProps, 'children'>;
+  /** Data module with the page's rendered HTML, if server rendered */
+  ssrProps?: SsrContent;
 };

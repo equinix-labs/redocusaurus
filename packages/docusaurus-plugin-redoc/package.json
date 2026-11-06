@@ -1,6 +1,6 @@
 {
   "name": "docusaurus-plugin-redoc",
-  "version": "2.5.0",
+  "version": "2.6.0-redoc3.2",
   "description": "Redoc Plugin for DocusaurusV2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -29,8 +29,7 @@
   },
   "homepage": "https://github.com/rohit-gohri/redocusaurus/tree/main/packages/docusaurus-plugin-redoc#readme",
   "dependencies": {
-    "@redocly/openapi-core": "1.16.0",
-    "redoc": "2.4.0"
+    "@redocly/openapi-core": "^2.0.0"
   },
   "devDependencies": {
     "@docusaurus/types": "^3.6.0",
@@ -47,6 +46,6 @@
     "@docusaurus/utils": "^3.6.0"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   }
 }

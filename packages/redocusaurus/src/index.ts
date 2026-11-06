@@ -18,7 +18,7 @@ export default async function preset(
     theme: {},
   },
 ) {
-  const { debug = false, openapi, specs = [], theme = {}, config } = opts;
+  const { debug = false, openapi, specs = [], theme = {}, config, ssr } = opts;
   if (debug) {
     console.error('[REDOCUSAURUS] Options:', opts);
   }
@@ -105,6 +105,7 @@ export default async function preset(
             require.resolve('docusaurus-plugin-redoc'),
             {
               config,
+              ...(ssr === undefined ? {} : { ssr }),
               ...pluginOpts,
               themeId,
               id: pluginOpts.id || `plugin-redoc${id}-${index}`,

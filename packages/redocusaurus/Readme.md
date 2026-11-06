@@ -4,6 +4,8 @@
 
 [Redoc](https://github.com/redocly/redoc) for [Docusaurus](https://docusaurus.io/).
 
+Uses Redoc 3 and needs Node.js 22 or newer. Coming from Redoc 2? See the [migration guide](https://redocusaurus.vercel.app/docs/guides/migrating-to-v3).
+
 ## Usage
 
 1. Setup [docusaurus project](https://docusaurus.io/docs/installation)

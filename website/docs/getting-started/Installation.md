@@ -5,6 +5,10 @@ author: Rohit Gohri
 author_url: https://rohit.page
 ---
 
+:::info Requirements
+Redoc 3 needs **Node.js 22 or newer**, and Docusaurus 3.6 or newer with React 18.3 or newer. Redocusaurus also installs `react-router` 7 for Redoc, next to the version Docusaurus uses.
+:::
+
 1. Setup [docusaurus project](https://docusaurus.io/docs/installation)
 
 1. Install redocusaurus:
@@ -101,7 +105,7 @@ author_url: https://rohit.page
 
 The API Docs will be available at `/api` + the folder name inside `openapi`, i.e. `/api/example` for the example above. If any manual `specs` are specified then they will also be available at the specified routes.
 
-You will now also be able to reference schema elements manually using [Schema Imports](/docs/guides/schema-imports), [Operation Imports](/docs/guides/operation-imports) or create Custom React Pages using the data and theme components.
+You can also create Custom React Pages using the data and theme components, or embed an API in an MDX page with [`ApiDocMdx`](/docs/guides/multiple-apis).
 
 ## Options
 

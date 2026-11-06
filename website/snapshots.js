@@ -5,7 +5,6 @@ const urls = [
   },
   { name: 'URL Spec', path: '/examples/using-remote-url/' },
   { name: 'Nested Example', path: '/docs/nested/nested-1' },
-  { name: 'Schema Imports', path: '/docs/guides/schema-imports' },
 ];
 
 module.exports = () => {

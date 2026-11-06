@@ -1,5 +1,5 @@
 import { Joi } from '@docusaurus/utils-validation';
-import type { RawConfig } from '@redocly/openapi-core';
+import type { RawUniversalConfig } from '@redocly/openapi-core';
 
 type LayoutProps = {
   title?: string;
@@ -26,7 +26,7 @@ export interface PluginDirectUsageOptions {
    * Redocly config to bundle file
    * @see https://redocly.com/docs/cli/configuration/configuration-file/
    */
-  config?: string | RawConfig;
+  config?: string | RawUniversalConfig;
   layout?: LayoutProps;
 }
 
@@ -35,7 +35,30 @@ export interface PluginOptions extends PluginDirectUsageOptions {
   spec: string;
   url?: string;
   route?: string;
+  /**
+   * By default a relative `url` is relative to the site's `baseUrl`. Set this to
+   * `false` to keep it relative to the API's `route` instead (for a spec file
+   * that sits next to the page, e.g. `openapi.yaml` for `/api/pets` is
+   * `/api/pets/openapi.yaml`). It is never read against the page the reader is
+   * on, because every tag and operation is a page of its own.
+   * @default true
+   */
   normalizeUrl?: boolean;
+  /**
+   * Render every tag and operation page to static HTML at build time, with one
+   * exact route for each. HTML is rendered in production builds of the default
+   * locale; the dev server and other locales get the same exact routes, which
+   * render in the browser.
+   *
+   * - `true`: if Redoc can't be rendered on the server, warn and fall back to a
+   *   client-rendered page (a single prefix route that renders any sub-path).
+   * - `'required'`: fail the build instead. Use it when the web server has no
+   *   fallback for sub-paths (every page must exist as a file), since a silent
+   *   fallback would ship a site where every deep link is a 404.
+   * - `false`: never render on the server, and use a single prefix route.
+   * @default true
+   */
+  ssr?: boolean | 'required';
 }
 
 export interface PluginOptionsWithDefault extends PluginOptions {
@@ -46,6 +69,7 @@ export const DEFAULT_OPTIONS = {
   layout: {},
   debug: false,
   normalizeUrl: true,
+  ssr: true,
 } satisfies Omit<PluginOptions, 'spec'>;
 
 export const PluginOptionSchema = Joi.object<PluginOptions>({
@@ -60,5 +84,8 @@ export const PluginOptionSchema = Joi.object<PluginOptions>({
   url: Joi.string().uri({ allowRelative: true }).optional(),
   normalizeUrl: Joi.boolean().default(DEFAULT_OPTIONS.normalizeUrl),
   route: Joi.string().uri({ relativeOnly: true }).optional(),
+  ssr: Joi.alternatives()
+    .try(Joi.boolean(), Joi.string().valid('required'))
+    .default(DEFAULT_OPTIONS.ssr),
   layout: Joi.any().default(DEFAULT_OPTIONS.layout),
 });

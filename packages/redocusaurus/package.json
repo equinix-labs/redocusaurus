@@ -1,6 +1,6 @@
 {
   "name": "redocusaurus",
-  "version": "2.5.2",
+  "version": "2.6.0-redoc3.2",
   "description": "Redoc for DocusaurusV2",
   "main": "dist/index.js",
   "exports": {
@@ -41,15 +41,17 @@
   },
   "homepage": "https://redocusaurus.vercel.app/",
   "dependencies": {
-    "docusaurus-plugin-redoc": "2.5.0",
-    "docusaurus-theme-redoc": "2.5.1"
+    "docusaurus-plugin-redoc": "2.6.0-redoc3.2",
+    "docusaurus-theme-redoc": "2.6.0-redoc3.2"
   },
   "peerDependencies": {
     "@docusaurus/theme-common": "^3.6.0",
-    "@docusaurus/utils": "^3.6.0"
+    "@docusaurus/utils": "^3.6.0",
+    "react": "^18.3.0 || ^19.0.0",
+    "react-dom": "^18.3.0 || ^19.0.0"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=22"
   },
   "devDependencies": {
     "@docusaurus/theme-common": "^3.6.0",

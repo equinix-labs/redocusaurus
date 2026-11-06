@@ -6,8 +6,6 @@ import type {
   OptionValidationContext,
 } from '@docusaurus/types';
 import { normalizeUrl } from '@docusaurus/utils';
-import { loadAndBundleSpec } from 'redoc';
-import type { OpenAPISpec } from 'redoc/typings/types';
 import {
   formatProblems,
   getTotals,
@@ -25,8 +23,11 @@ import {
   DEFAULT_OPTIONS,
 } from './options';
 import type { SpecProps, ApiDocProps } from './types/common';
+import type { OpenAPISpec } from './types/redoc-compat';
 import { loadSpecWithConfig } from './loadSpec';
 import { loadRedoclyConfig } from './loadRedoclyConfig';
+import { addSpecRoutes, type SsrCssAsset } from './routes';
+import { resolveDownloadUrl, trimOperationIds } from './specUtils';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const version = require('../package.json').version;
@@ -53,6 +54,8 @@ export default function redocPlugin(
 
   let url = downloadUrl;
   const isSpecFile = fs.existsSync(spec);
+  // Stylesheets of the server-rendered pages, written to the build in `postBuild`
+  const ssrCssAssets: SsrCssAsset[] = [];
 
   const fileName = path.join(
     'redocusaurus',
@@ -69,8 +72,8 @@ export default function redocPlugin(
     name: 'docusaurus-plugin-redoc',
     async loadContent() {
       const redoclyConfig = await loadRedoclyConfig(config);
-      if (redoclyConfig.configFile) {
-        filesToWatch.push(redoclyConfig.configFile);
+      if (redoclyConfig.configPath) {
+        filesToWatch.push(redoclyConfig.configPath);
       }
 
       let bundledSpec: Document, problems: NormalizedProblem[];
@@ -114,15 +117,21 @@ export default function redocPlugin(
       if (debug) {
         console.log('[REDOCUSAURUS_PLUGIN] File Bundled');
       }
-      // Pass again to loader to convert swagger to openapi
-      const converted = await loadAndBundleSpec(bundledSpec.parsed);
+      // Redoc 3 converts Swagger 2.0 to OpenAPI itself at render time, and its
+      // package is a browser-only ES module that can't be loaded here in Node.
+      // The pages are rendered from a copy with trimmed operationIds, and the
+      // downloadable spec (`bundle`) stays as the author wrote it.
+      const converted = trimOperationIds(
+        bundledSpec.parsed as OpenAPISpec,
+        spec,
+      );
 
       // If download url is not provided then use bundled yaml as a static file (see `postBuild`)
       url = url || fileName;
 
       return {
         converted,
-        bundle: bundledSpec.parsed,
+        bundle: bundledSpec.parsed as Record<string, unknown>,
       };
     },
     async contentLoaded({ content, actions }) {
@@ -136,8 +145,8 @@ export default function redocPlugin(
         themeId,
         isSpecFile,
         normalizeUrl: normalizeDownloadUrl,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        spec: content.converted as any,
+        route: options.route,
+        spec: content.converted,
       };
       setGlobalData(data);
 
@@ -155,25 +164,34 @@ export default function redocPlugin(
           JSON.stringify(options.layout),
         );
 
-        const modules: Record<keyof ApiDocProps, string> = {
+        const modules: Partial<Record<keyof ApiDocProps, string>> = {
           specProps,
           layoutProps,
         };
 
-        const routeOptions = {
+        await addSpecRoutes({
+          actions: { addRoute, createData },
+          context,
+          options,
+          spec: content.converted,
+          specPath: normalizeUrl([baseUrl, routePath]),
           modules,
-          component: '@theme/ApiDoc',
-          exact: true,
-          path: normalizeUrl([baseUrl, routePath]),
-        };
-
-        if (debug) {
-          console.error('[REDOCUSAURUS_PLUGIN] Route:', routeOptions);
-        }
-        addRoute(routeOptions);
+          cssAssets: ssrCssAssets,
+          downloadUrl: resolveDownloadUrl(
+            url,
+            baseUrl,
+            normalizeDownloadUrl,
+            normalizeUrl([baseUrl, routePath]),
+          ),
+        });
       }
     },
     async postBuild({ content }) {
+      ssrCssAssets.forEach(({ name, css }) => {
+        const file = path.join(context.outDir, 'assets', 'redoc-ssr', name);
+        fs.mkdirSync(path.dirname(file), { recursive: true });
+        fs.writeFileSync(file, css);
+      });
       if (!isSpecFile || downloadUrl) {
         return;
       }

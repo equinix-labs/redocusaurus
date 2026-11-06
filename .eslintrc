@@ -68,6 +68,13 @@
       "rules": {
         "@typescript-eslint/explicit-function-return-type": "off"
       }
+    },
+    {
+      "files": ["packages/*/test/**/*.js"],
+      "rules": {
+        "@typescript-eslint/no-var-requires": "off",
+        "max-lines": "off"
+      }
     }
   ]
 }

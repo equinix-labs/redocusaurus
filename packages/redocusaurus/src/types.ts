@@ -38,6 +38,14 @@ export type PresetOptions = {
    * @see https://redocly.com/docs/cli/configuration/configuration-file/
    */
   config?: string;
+  /**
+   * Default for every spec: render pages on the server at build time.
+   * `'required'` fails the build if that is not possible.
+   * A spec's own `ssr` option takes precedence.
+   * See the `ssr` option of docusaurus-plugin-redoc.
+   * @default true
+   */
+  ssr?: PluginOptions['ssr'];
   specs?: SpecOptions[];
   openapi?: FolderOptions;
   theme?: Omit<ThemeOptions, 'id'>;

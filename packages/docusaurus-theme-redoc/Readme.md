@@ -50,52 +50,67 @@ See [here for full example.](../../website/src/pages/examples/custom-page/index.
 
 ## Options
 
+Redoc 3 is themed with CSS variables, so by default the API pages follow your Docusaurus theme (fonts, colors, light and dark mode). You only need these options to change that.
+
 ```js
 {
    /**
-   * Highlight color for docs
+   * Highlight color for docs (any CSS color).
+   * Defaults to the primary color of your Docusaurus theme.
    */
    primaryColor: '#1890ff',
    /**
     * Highlight color for docs in dark mode, if different.
     * Will default to `primaryColor` if not set.
     */
-   primaryColorDark: '#25c2a0',
+   primaryColorDark: '#69c0ff',
    /**
-   * Options to pass to redoc
-   * @see https://github.com/redocly/redoc#redoc-options-object
+   * Any other CSS variables of Redoc 3. `light` applies in both modes,
+   * and `dark` overrides it in dark mode.
+   */
+   cssVariables: {
+     light: { 'sidebar-width': '320px' },
+     dark: { 'bg-color': '#000' },
+   },
+   /**
+   * Keep Redoc's light/dark mode in step with Docusaurus's (default `true`).
+   * Redoc 3 has no option for this, so it relies on how Redoc stores its mode;
+   * set to `false` if a Redoc update breaks it.
+   */
+   syncColorMode: true,
+   /**
+   * Options to pass to redoc (usually set in `redocly.yaml` instead)
+   * @see https://redocly.com/docs/redoc/config/
    */
    options: { disableSearch: true },
-   /**
-   * Options to pass to override RedocThemeObject
-   * @see https://github.com/Redocly/redoc#redoc-theme-object
-   */
-   theme: { typography: { fontSize: '16px' }},
 }
 ```
 
-### primaryColor (string, hex/rgba value)
+### primaryColor (string, any CSS color)
 
-Convenient way to provide the highlighted color used by Redoc.  
-This value will be used as `colors.primary.main` in the `themes` option. Must be an actual color value and not a css variable.
+Convenient way to provide the highlighted color used by Redoc (links, the active item, buttons). The hover and active shades are derived from it.
 
-### primaryColorDark (string, hex/rgba value)
+### primaryColorDark (string, any CSS color)
 
 Optional way to change the highlighted color used by Redoc in dark mode. Defaults to `primaryColor` if not set.
-This value will be used as `colors.primary.main` in the `themes` option. Must be an actual color value and not a css variable.
+
+### cssVariables (optional, object)
+
+Set any of the CSS variables that Redoc 3 uses for its theme. `light` applies in both modes, and `dark` overrides it in dark mode. Names can be written with or without the leading `--`.
+
+### syncColorMode (optional, boolean, default `true`)
+
+Keeps Redoc 3's light and dark mode in step with Docusaurus's, in both directions. Redoc has no option for this, so it relies on the `redoc.colorMode` key in `localStorage`, the `light`/`dark` class on `<html>` and Redoc's own mode switch (`data-testid="color-mode-switcher"`), which is clicked when Docusaurus's mode changes so the page does not jump. Set it to `false` if a Redoc update breaks it: Redoc then follows its own mode.
 
 ### options (optional, object)
 
-Override redoc options passed to [RedocStandalone](https://redoc.ly/docs/redoc/quickstart/react/) component. See the defaults [here](./src/redocData.ts#L5-L12).
+Override redoc options passed to [RedocStandalone](https://redoc.ly/docs/redoc/quickstart/react/) component. See the defaults [here](./src/redocData.ts).
 
-Available properties [here](https://github.com/Redocly/redoc#redoc-options-object).  
-You cannot set theme property using this property, use `theme` option below instead.
+Available properties [here](https://redocly.com/docs/redoc/config/). Telemetry is off by default (`disableTelemetry: true`).
 
 ### theme (optional, object)
 
-Override the redoc theme object passed to Redoc. See the default [here](https://github.com/Redocly/redoc#redoc-theme-object).
-
-> Note: You should not provide any color using this property, as it will be the same value for dark and light themes.
+Deprecated and ignored: this was the Redoc 2 theme object, and Redoc 3 has no such option. A warning is printed once at build time if it is set. Use `primaryColor` and `cssVariables`.
 
 ## Docs
 

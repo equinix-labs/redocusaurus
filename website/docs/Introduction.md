@@ -14,7 +14,12 @@ Redocusaurus is a preset for Docusaurus to help you integrate OpenAPI documentat
   - In built types
 - Easy to setup and already themed
   - Just add the preset and pass it your YAML
-  - Dark Mode support
+  - Follows your Docusaurus theme, with Dark Mode support
+- Fast and search friendly
+  - Every tag and operation is [rendered to static HTML at build time](./guides/build-time-rendering.md)
+  - Each one has its own link, `<route>/<tag>/<operation>`
 - Customizable
   - Change Redoc Options
   - [Swizzle](https://docusaurus.io/docs/using-themes#swizzling-theme-components) components to your needs
+
+Upgrading from Redoc 2 (redocusaurus 2.x)? Read the [migration guide](./guides/migrating-to-v3.md).

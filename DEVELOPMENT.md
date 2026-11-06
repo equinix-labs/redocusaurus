@@ -28,6 +28,17 @@ This repository is structured as a [monorepo](https://blog.npmjs.org/post/186494
    yarn dev:website
    ```
 
+## Tests
+
+The unit tests are in `packages/*/test` and use Node's built-in test runner (Node 22 or newer), without any extra dependency. They test the built files in `dist`, so build the packages first:
+
+```sh
+yarn build:packages
+yarn test:unit
+```
+
+Some of them render a small spec with the real Redoc 3, so they take a few seconds. The visual end-to-end tests of the website are separate (`yarn test` in `website`).
+
 ## Releasing
 
 Releases, versioning and Changelogs are handled by [changesets](./.changeset/README.md).
