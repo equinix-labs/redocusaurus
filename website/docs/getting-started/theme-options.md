@@ -37,9 +37,9 @@ On screens up to 600px wide the page title and the section headings use smaller 
 
 ### syncColorMode (optional, boolean, default `true`)
 
-Redoc 3 keeps its own light and dark mode and ignores Docusaurus's. By default Redocusaurus keeps the two in step in both directions: when the reader switches Docusaurus's mode, Redoc follows, and when they use the switch in Redoc's sidebar, Docusaurus follows.
+Redoc 3 keeps its own light and dark mode and ignores Docusaurus's. By default Redocusaurus keeps the two in step in both directions: when the reader switches Docusaurus's mode, Redoc follows, and when they use the switch in Redoc's sidebar, Docusaurus follows. Redoc changes in place: the page keeps its scroll position and Redoc is not rebuilt.
 
-Redoc 3 has no option for this, so it relies on how Redoc stores and applies its mode: the `redoc.colorMode` key in `localStorage`, and a `light` or `dark` class on `<html>`. These are not documented, and a test checks that the Redoc version in use still behaves that way. If a Redoc update ever breaks the sync (for example the API pages stay in the wrong mode), set it to `false`:
+Redoc 3 has no option for this, so it relies on how Redoc stores and applies its mode: the `redoc.colorMode` key in `localStorage`, a `light` or `dark` class on `<html>`, and the mode switch in its sidebar (`data-testid="color-mode-switcher"`), which Redocusaurus clicks when Docusaurus's mode changes. If that switch is not on the page, Redoc is rebuilt instead. These are not documented, and a test checks that the Redoc version in use still behaves that way. If a Redoc update ever breaks the sync (for example the API pages stay in the wrong mode), set it to `false`:
 
 ```ts
 theme: {

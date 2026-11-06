@@ -33,7 +33,8 @@ function RedocClient({
 
   // Redoc 3 keeps its own color mode and ignores Docusaurus's `data-theme`, so
   // keep the two in step (see utils/redocColorMode.ts for how, and what it relies
-  // on). The key remounts Redoc when the mode changes.
+  // on). A mode change switches Redoc in place; the key only remounts it as a
+  // fallback.
   const colorModeKey = useRedocColorModeSync(syncColorMode);
 
   return (

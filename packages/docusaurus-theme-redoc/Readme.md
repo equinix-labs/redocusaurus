@@ -100,7 +100,7 @@ Set any of the CSS variables that Redoc 3 uses for its theme. `light` applies in
 
 ### syncColorMode (optional, boolean, default `true`)
 
-Keeps Redoc 3's light and dark mode in step with Docusaurus's, in both directions. Redoc has no option for this, so it relies on the `redoc.colorMode` key in `localStorage` and the `light`/`dark` class on `<html>`. Set it to `false` if a Redoc update breaks it: Redoc then follows its own mode.
+Keeps Redoc 3's light and dark mode in step with Docusaurus's, in both directions. Redoc has no option for this, so it relies on the `redoc.colorMode` key in `localStorage`, the `light`/`dark` class on `<html>` and Redoc's own mode switch (`data-testid="color-mode-switcher"`), which is clicked when Docusaurus's mode changes so the page does not jump. Set it to `false` if a Redoc update breaks it: Redoc then follows its own mode.
 
 ### options (optional, object)
 

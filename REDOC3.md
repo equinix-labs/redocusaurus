@@ -164,9 +164,15 @@ or anchors in a production build):
         installed Redoc bundle and fails if the key, the `light`/`dark` names or the class
         application change (`redoc` is pinned, so an upgrade is deliberate), plus tests of
         the reconcile rule and of storing the mode. Checked by breaking the code.
-      - Known cost, not changed: Redoc reads the mode only when it mounts, so a switch from
-        Docusaurus remounts Redoc (a keyed remount). On a very large spec that is slower
-        than a live update. Revisit if it matters.
+      - **Switches in place:** Redoc reads the mode only when it mounts, so a switch from
+        Docusaurus used to remount Redoc (a keyed remount). That rebuilt the whole page: it
+        scrolled to the top and the page height changed. The hook now clicks Redoc's own
+        switcher (`[data-testid="color-mode-switcher"]`, a two-state toggle), which changes
+        the mode in place, and keeps the remount only as the fallback when the switcher is
+        not on the page. `test/redocColorMode.test.js` also checks the switcher exists and
+        toggles dark and light. Checked in a browser on the website: the scroll position and
+        the page height are kept, Redoc is not remounted, and Redoc's own switcher still
+        drives Docusaurus. Not checked: the fallback remount in a browser.
 - [~] **10. Compatibility matrix** (see the table below). Every row is tested except
       Safari and Firefox, which need a person with those browsers (Chrome is the only one
       used so far). Manual check, on the website built with `yarn build:website` and served

@@ -21,6 +21,6 @@ Redoc 3 replaces the Redoc 2 internals that redocusaurus was built on, so this i
 
 - Every tag and operation is rendered to its own static page at build time, with one exact route each. Unknown paths below an API's route are a 404, links to them are checked when you build, and no server fallback rule is needed. The new `ssr` option (preset or spec) is `true` by default, `'required'` fails the build if it cannot render, and `false` turns it off. Production builds only, default locale only.
 - The API pages follow your Docusaurus theme (fonts, colors, light and dark mode) by default. `primaryColor` and `primaryColorDark` accept any CSS color, and the new `cssVariables: { light, dark }` option sets any other Redoc variable.
-- A new `syncColorMode` theme option (default `true`) keeps Redoc's light and dark mode in step with Docusaurus's. Redoc 3 has no option for this, so it relies on how Redoc stores its mode; set it to `false` to let Redoc follow its own mode.
+- A new `syncColorMode` theme option (default `true`) keeps Redoc's light and dark mode in step with Docusaurus's, switching Redoc in place without rebuilding the page (so it keeps its scroll position). Redoc 3 has no option for this, so it relies on how Redoc stores its mode; set it to `false` to let Redoc follow its own mode.
 - Swagger 2.0 specs are converted by Redoc 3 when the page renders.
 - Whitespace around an `operationId` is trimmed, with a warning naming the operation.

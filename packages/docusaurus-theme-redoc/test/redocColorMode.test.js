@@ -4,7 +4,9 @@ const fs = require('node:fs');
 const {
   REDOC_COLOR_MODE_KEY,
   REDOC_MODE_CLASSES,
+  REDOC_SWITCHER_SELECTOR,
   reconcileColorMode,
+  redocModeOf,
   storeRedocColorMode,
 } = require('../dist/utils/redocColorMode');
 
@@ -40,6 +42,14 @@ describe('reconcileColorMode', () => {
       type: 'restore',
       mode: 'light',
     });
+  });
+});
+
+describe('redocModeOf', () => {
+  test('reads the mode Redoc has applied to <html>', () => {
+    assert.equal(redocModeOf(html('dark')), 'dark');
+    assert.equal(redocModeOf(html('light', 'other-class')), 'light');
+    assert.equal(redocModeOf(html('other-class')), undefined);
   });
 });
 
@@ -95,6 +105,19 @@ describe('what Redoc 3 does, which the sync relies on', () => {
 
   test('its modes are the classes we put back and watch for', () => {
     assert.match(bundle, /LIGHT:`light`,DARK:`dark`/);
+  });
+
+  test('it has a color mode switcher that changes the mode in place', () => {
+    // A two-state toggle with data-testid="color-mode-switcher": the sync clicks
+    // it, so a change from Docusaurus reaches Redoc without remounting it.
+    assert.equal(
+      REDOC_SWITCHER_SELECTOR,
+      '[data-testid="color-mode-switcher"]',
+    );
+    assert.match(
+      bundle,
+      /"data-testid":`color-mode-switcher`,onClick:\(\)=>\{let [a-z]=[a-z]===[\w$.]+\.DARK\?[\w$.]+\.LIGHT:[\w$.]+\.DARK/,
+    );
   });
 
   test('it applies the mode as a class on <html>', () => {

@@ -9,6 +9,9 @@
  * - It applies the mode as a `light` or `dark` class on `<html>`. Its own
  *   switcher changes that class. Its inline no-flash script (rendered into the
  *   static HTML) reads the same key and sets the same class.
+ * - Its own switcher, `[data-testid="color-mode-switcher"]`, changes the mode in
+ *   place (a two-state toggle). Clicking it is how a mode change that comes from
+ *   Docusaurus reaches Redoc without remounting it.
  *
  * `test/redocColorMode.test.js` checks the installed Redoc still has these, so
  * a Redoc upgrade that changes them fails a test instead of silently leaving
@@ -17,6 +20,9 @@
 
 /** The `localStorage` key Redoc reads its color mode from. */
 export const REDOC_COLOR_MODE_KEY = 'redoc.colorMode';
+
+/** Selects Redoc's own color mode switcher (the button in its sidebar). */
+export const REDOC_SWITCHER_SELECTOR = '[data-testid="color-mode-switcher"]';
 
 /** The classes Redoc puts on `<html>`, one per mode. */
 export const REDOC_MODE_CLASSES = ['light', 'dark'] as const;
@@ -30,6 +36,13 @@ export function storeRedocColorMode(mode: RedocColorMode): void {
   } catch {
     // storage unavailable: Redoc falls back to the OS preference
   }
+}
+
+/** The mode Redoc has applied to `<html>`, if it has applied one. */
+export function redocModeOf(html: {
+  classList: { contains(name: string): boolean };
+}): RedocColorMode | undefined {
+  return REDOC_MODE_CLASSES.find((c) => html.classList.contains(c));
 }
 
 /** What to do about the class on `<html>`, given the mode Docusaurus is in. */
@@ -47,7 +60,7 @@ export function reconcileColorMode(
   html: { classList: { contains(name: string): boolean } },
   colorMode: RedocColorMode,
 ): ColorModeAction | undefined {
-  const mode = REDOC_MODE_CLASSES.find((c) => html.classList.contains(c));
+  const mode = redocModeOf(html);
   if (!mode) {
     // Docusaurus re-applies its own `<html>` class on navigation (back and
     // forward included), which wipes Redoc's class and leaves its styles
